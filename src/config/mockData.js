@@ -701,7 +701,7 @@ export const mockNotifications = [
   {
     id: 'notification-1-1',
     userId: 'student-1',
-    title: '🎉 ยินดีด้วย! คุณผ่านแบบทดสอบหลังเรียน',
+    title: '🎉 ยินดีด้วย คุณผ่านแบบทดสอบหลังเรียน',
     message: 'คุณทำคะแนนได้ 100 คะแนนในแบบทดสอบหลังเรียน - สระ อา',
     type: 'SUCCESS',
     isRead: true,
@@ -765,8 +765,8 @@ export const mockNotifications = [
   {
     id: 'notification-3-1',
     userId: 'student-3',
-    title: '👋 ยินดีต้อนรับ!',
-    message: 'ยินดีต้อนรับสู่ระบบเรียนภาษาไทย ป.1 เริ่มต้นการเรียนรู้กันเลย!',
+    title: '👋 ยินดีต้อนรับ',
+    message: 'ยินดีต้อนรับสู่ระบบเรียนภาษาไทย ป.1 เริ่มต้นการเรียนรู้กันเลย',
     type: 'INFO',
     isRead: false,
     createdAt: new Date('2024-01-01'),

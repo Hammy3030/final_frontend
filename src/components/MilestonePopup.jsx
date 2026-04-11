@@ -6,8 +6,8 @@ const MilestoneToast = ({
   isOpen,
   onClose,
   lessonId,
-  title = "เก่งที่สุดเลย! 🥳",
-  subtitle = "ลุยต่อกันเลย!",
+  title = "เก่งที่สุดเลย 🥳",
+  subtitle = "ลุยต่อกันเลย",
   duration = 1.5 // หน่วยเป็นวินาที
 }) => {
   // ใช้ internal state เพื่อแยกขาดจาก Logic ของตัวแม่

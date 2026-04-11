@@ -138,7 +138,7 @@ const MockTestPage = () => {
     setTestState('testing');
     setAnswers({});
     setCurrentQuestionIndex(0);
-    toast.success('เริ่มทำแบบทดสอบ!');
+    toast.success('เริ่มทำแบบทดสอบ');
   };
 
   const handleAnswerSelect = (questionId, answer) => {

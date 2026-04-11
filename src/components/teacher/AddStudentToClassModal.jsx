@@ -63,7 +63,7 @@ const AddStudentToClassModal = ({ isOpen, onClose, onSuccess, classroomId }) => 
             );
 
             if (response.data.success) {
-                toast.success(`เพิ่มนักเรียนใหม่ ${response.data.data.students.length} คนสำเร็จ`);
+                toast.success(`สร้างบัญชีนักเรียนใหม่ ${response.data.data.students.length} คนสำเร็จ`);
                 onSuccess();
                 onClose();
             }
@@ -87,7 +87,7 @@ const AddStudentToClassModal = ({ isOpen, onClose, onSuccess, classroomId }) => 
                 <div className="bg-[#FFB000] p-4 flex justify-between items-center shrink-0">
                     <h3 className="text-xl font-bold text-white flex items-center gap-2">
                         <UserPlus size={24} />
-                        เพิ่มนักเรียนเข้าห้องเรียน
+                        สร้างบัญชีนักเรียน
                     </h3>
                     <button onClick={onClose} className="text-white/80 hover:text-white transition-colors">
                         <X size={24} />
@@ -102,8 +102,8 @@ const AddStudentToClassModal = ({ isOpen, onClose, onSuccess, classroomId }) => 
                                 <AlertCircle className="text-blue-500 shrink-0" size={20} />
                                 <div className="text-sm text-blue-700">
                                     <p className="font-semibold mb-1">คำแนะนำ</p>
-                                    <p>การเพิ่มนักเรียนจะเป็นการสร้างบัญชีนักเรียนด้วย</p>
-                                    <p>คำนำหน้าสามารถใช้ได้ทั้ง ด.ช./ด.ญ./เด็กชาย/เด็กหญิง</p>
+
+                                    <p>คำนำหน้าเลือกใช้     ด.ช./ด.ญ./เด็กชาย/เด็กหญิง</p>
                                     <p>พิมพ์ชื่อ-นามสกุลของนักเรียน 1 คนต่อ 1 บรรทัด</p>
 
                                 </div>

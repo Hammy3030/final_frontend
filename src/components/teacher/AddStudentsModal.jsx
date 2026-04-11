@@ -61,7 +61,7 @@ const AddStudentsModal = ({ onClose, onSubmit, isLoading }) => {
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">
-              เพิ่มนักเรียน
+              สร้างบัญชีนักเรียน
             </h3>
             <button
               onClick={onClose}
@@ -144,7 +144,7 @@ const AddStudentsModal = ({ onClose, onSubmit, isLoading }) => {
                 disabled={isLoading}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                เพิ่มนักเรียน
+                สร้างบัญชีนักเรียน
               </button>
             </div>
 
@@ -171,7 +171,7 @@ const AddStudentsModal = ({ onClose, onSubmit, isLoading }) => {
                     กำลังเพิ่ม...
                   </div>
                 ) : (
-                  `เพิ่มนักเรียน ${fields.length} คน`
+                  `สร้างบัญชีนักเรียน ${fields.length} คน`
                 )}
               </motion.button>
             </div>

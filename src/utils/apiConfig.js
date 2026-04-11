@@ -9,10 +9,10 @@
  */
 const getHostname = () => {
   try {
-    if (typeof globalThis !== 'undefined' && 
-        globalThis.window && 
-        globalThis.window.location && 
-        globalThis.window.location.hostname) {
+    if (typeof globalThis !== 'undefined' &&
+      globalThis.window &&
+      globalThis.window.location &&
+      globalThis.window.location.hostname) {
       return globalThis.window.location.hostname;
     }
   } catch (error) {
@@ -54,8 +54,8 @@ export const getApiBaseUrl = () => {
       }
       // If not localhost and not production domain, use Vercel backend
       else if (hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('192.168.') && !hostname.includes('10.')) {
-      baseUrl = 'https://bearthai-backend.vercel.app';
-      source = `hostname: ${hostname}`;
+        baseUrl = 'https://bearthai-backend.vercel.app';
+        source = `hostname: ${hostname}`;
       }
     }
   }
@@ -67,7 +67,7 @@ export const getApiBaseUrl = () => {
       baseUrl = 'https://itweb1068.cpkku.com';
       source = 'production mode (itweb1068)';
     } else {
-    baseUrl = 'https://bearthai-backend.vercel.app';
+      baseUrl = 'https://bearthai-backend.vercel.app';
       source = 'production mode (Vercel)';
     }
   }
@@ -84,7 +84,7 @@ export const getApiBaseUrl = () => {
       const hostname = getHostname();
       if (hostname) console.log(`[API Config] Current hostname: ${hostname}`);
     }
-  } catch (_) {}
+  } catch (_) { }
 
   return baseUrl;
 };
@@ -98,14 +98,14 @@ export const getApiBaseUrl = () => {
 export const getApiUrl = (endpoint) => {
   const baseUrl = getApiBaseUrl();
 
-  // Remove leading slash from endpoint if exists
+  // ป้องกัน Error ถ้า endpoint ว่าง
+  if (!endpoint || typeof endpoint !== 'string') {
+    return `${baseUrl}/api`;
+  }
+
+  // ลบ / ข้างหน้าออกถ้ามี เพื่อป้องกัน double slash
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
 
-  // Ensure /api is included
-  const apiPath = cleanEndpoint.startsWith('api/')
-    ? cleanEndpoint
-    : `api/${cleanEndpoint}`;
-
-  return `${baseUrl}/${apiPath}`;
+  return `${baseUrl}/api/${cleanEndpoint}`;
 };
 

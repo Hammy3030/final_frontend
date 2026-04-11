@@ -42,7 +42,7 @@ const LessonPage = () => {
       onSuccess: () => {
         queryClient.invalidateQueries('student-lessons');
         setShowConfetti(true);
-        toast.success('เรียนจบบทเรียนแล้ว!');
+        toast.success('เรียนจบบทเรียนแล้ว');
 
         // Hide confetti after 3 seconds
         setTimeout(() => setShowConfetti(false), 3000);

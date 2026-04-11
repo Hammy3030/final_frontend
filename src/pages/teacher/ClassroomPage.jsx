@@ -1068,7 +1068,7 @@ const ClassroomPage = () => {
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition duration-200"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
-                เพิ่มนักเรียน
+                สร้างบัญชีนักเรียน
               </motion.button>
             </div>
 
@@ -1199,7 +1199,7 @@ const ClassroomPage = () => {
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition duration-200"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
-                  เพิ่มนักเรียน
+                  สร้างบัญชีนักเรียน
                 </motion.button>
               </div>
             ) : filteredAndSortedStudents().length === 0 ? (
@@ -1498,15 +1498,15 @@ const ClassroomPage = () => {
                                     >
                                       <Edit className="w-4 h-4" />
                                     </button>
-                                    <button
+                                    {/* <button
                                       onClick={() => navigate(`/dashboard/teacher/lessons/${lesson.id}?classroomId=${classroomId}`)}
                                       className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition"
                                       title="เล่นบทเรียน"
                                     >
                                       <Play className="w-4 h-4" />
-                                    </button>
+                                    </button> */}
                                     {/* Play Test Button */}
-                                    {(() => {
+                                    {/* {(() => {
                                       const lessonTests = classroomData?.tests?.filter(t => t.lessonId === lesson.id || t.lessonId?.toString() === lesson.id?.toString()) || [];
                                       const firstTest = lessonTests[0];
                                       return firstTest ? (
@@ -1518,9 +1518,9 @@ const ClassroomPage = () => {
                                           <FileText className="w-4 h-4 text-purple-600" />
                                         </button>
                                       ) : null;
-                                    })()}
+                                    })()} */}
                                     {/* Play Game Button */}
-                                    {(() => {
+                                    {/* {(() => {
                                       const lessonGames = classroomData?.games?.filter(g => g.lessonId === lesson.id || g.lessonId?.toString() === lesson.id?.toString()) || [];
                                       const firstGame = lessonGames[0];
                                       return firstGame ? (
@@ -1532,14 +1532,14 @@ const ClassroomPage = () => {
                                           <Gamepad2 className="w-4 h-4 text-yellow-600" />
                                         </button>
                                       ) : null;
-                                    })()}
-                                    <button
+                                    })()} */}
+                                    {/* <button
                                       onClick={() => handleViewLesson(lesson.id)}
                                       className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
                                       title="ดูรายละเอียดบทเรียน"
                                     >
                                       <Search className="w-4 h-4" />
-                                    </button>
+                                    </button> */}
                                     <button
                                       onClick={() => handleDeleteLesson(lesson.id)}
                                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
@@ -1582,13 +1582,13 @@ const ClassroomPage = () => {
                         <FileText className="w-6 h-6 text-purple-600" />
                       </div>
                       <div className="flex gap-1">
-                        <button
+                        {/* <button
                           onClick={() => navigate(`/dashboard/student/tests/${test.id || test._id}`)}
                           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"
                           title="เล่นแบบทดสอบ"
                         >
                           <Play className="w-4 h-4 text-green-600" />
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleViewTest(test.id)}
                           className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-lg transition"
@@ -1639,13 +1639,13 @@ const ClassroomPage = () => {
                         <Gamepad2 className="w-6 h-6 text-yellow-600" />
                       </div>
                       <div className="flex gap-1">
-                        <button
+                        {/* <button
                           onClick={() => navigate(`/dashboard/student/games/${game.id || game._id}`)}
                           className="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition"
                           title="เล่นเกม"
                         >
                           <Play className="w-4 h-4 text-Yellow-600" />
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleViewGame(game.id)}
                           className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-lg transition"

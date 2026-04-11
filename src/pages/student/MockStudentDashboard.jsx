@@ -164,15 +164,25 @@ const MockStudentDashboard = () => {
                       className="group block h-full flex flex-col"
                     >
                       <motion.div
-                        className="bg-white rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl flex flex-col border-[8px] md:border-[12px] border-white relative transition-all flex-1"
+                        className="bg-white rounded-[3rem] md:rounded-[4rem] overflow-hidden  flex flex-col border-[8px] md:border-[12px] border-white relative transition-all flex-1"
                         whileHover={{ y: -8, scale: 1.01 }}
                       >
                         {/* Image Section: ปรับสัดส่วนให้คงที่และพอดีพื้นที่ */}
                         <div className="relative flex-1 bg-slate-100 overflow-hidden min-h-0">
                           <img
-                            src={`/หน้าปกบทเรียน/บทที่${num}.png`}
-                            className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${!canEnter ? 'opacity-30 grayscale' : ''}`}
-                            alt=""
+                            src={
+                              lesson.imageUrl
+                                ? (lesson.imageUrl.startsWith('data:') || lesson.imageUrl.startsWith('http')
+                                  ? lesson.imageUrl
+                                  : `${getApiBaseUrl()}${lesson.imageUrl.startsWith('/') ? '' : '/'}${lesson.imageUrl}`)
+                                : `/หน้าปกบทเรียน/บทที่${num}.png`
+                            }
+                            // เพิ่ม h-[101%] เพื่อให้รูปยาวเกินลงมานิดหน่อย จะได้ไม่เกิดช่องว่างเป็นเส้น
+                            className={`w-full h-[101%] object-cover transition-transform duration-700 group-hover:scale-110 ${!canEnter ? 'opacity-30 grayscale' : ''}`}
+                            alt={lesson.title}
+                            onError={(e) => {
+                              e.target.src = "https://www.freeiconspng.com/uploads/no-image-icon-11.PNG";
+                            }}
                           />
                           <div className="absolute top-4 right-4 p-2 md:p-3 bg-white/95 rounded-2xl shadow-lg z-10 border border-indigo-50/50">
                             <status.icon className={status.color} size={isLargeScreen ? 32 : 24} />
@@ -185,7 +195,12 @@ const MockStudentDashboard = () => {
                         </div>
 
                         {/* Title Section: ลดพื้นที่ว่างเกินไป (Vertical) */}
-                        <div className="p-4 md:p-6 text-center shrink-0 border-t border-black/5" style={{ background: footerColors[(Number(num) - 1) % 6] }}>
+                        <div
+                          // ลบ border-t border-black/5 ออก 
+                          // เพิ่ม -mt-1 (Margin Top ติดลบ) เพื่อให้แถบสีเกยขึ้นไปทับขอบรูปภาพ ปิดเส้นสีขาว ป้องกัน double slash
+                          className="p-4 md:p-6 text-center shrink-0 -mt-1 relative z-10"
+                          style={{ background: footerColors[(Number(num) - 1) % 6] }}
+                        >
                           <div className="flex items-center justify-center gap-2 mb-1">
                             <h3 className="text-2xl md:text-4xl font-black text-gray-900 italic tracking-tighter">บทที่ {num}</h3>
                             <AudioButton text={`บทที่ ${num} ${lesson.title.split(':')[1] || lesson.title}`} variant="mini" iconSize={20} className="!bg-white !text-indigo-600 shadow-sm" />

@@ -125,7 +125,7 @@ const MockGamePage = () => {
     setMatches({});
     setTimeLeft(300);
     setGameStartTime(Date.now());
-    toast.success('เริ่มเกม!');
+    toast.success('เริ่มเกม');
   };
 
   const handleGameComplete = async () => {
@@ -160,11 +160,11 @@ const MockGamePage = () => {
 
     if (finalScore >= 80) {
       setShowConfetti(true);
-      toast.success('ยอดเยี่ยม!');
+      toast.success('ยอดเยี่ยม');
     } else if (finalScore >= 60) {
-      toast.success('ดีมาก!');
+      toast.success('ดีมาก');
     } else {
-      toast('พยายามต่อไป!');
+      toast('พยายามต่อไป');
     }
   };
 
@@ -194,7 +194,7 @@ const MockGamePage = () => {
 
       // Check correctness (item.groupId should match zone.id)
       if (item.groupId === target.id) {
-        setFeedback({ type: 'correct', message: 'เก่งมาก!' });
+        setFeedback({ type: 'correct', message: 'เก่งมาก' });
         setScore(prev => prev + 10);
       } else {
         setFeedback({ type: 'incorrect', message: 'ลองอีกครั้ง' });
@@ -214,7 +214,7 @@ const MockGamePage = () => {
 
       // Check if they belong to the same pair (correct match)
       if (item.word === target.word) {
-        setFeedback({ type: 'correct', message: 'เก่งมาก!' });
+        setFeedback({ type: 'correct', message: 'เก่งมาก' });
         setScore(prev => prev + 10);
       } else {
         setFeedback({ type: 'incorrect', message: 'ลองอีกครั้ง' });
@@ -403,7 +403,7 @@ const GameIntro = ({ game, onStart }) => {
           </div>
 
           <h3 className="text-2xl font-black text-white leading-tight drop-shadow-md line-clamp-2 px-2">
-            {game?.title?.replace(/จับคู่ภาพกับคำศัพท์\s*[-\:]?\s*/g, '') || 'มาสนุกกันเลย!'}
+            {game?.title?.replace(/จับคู่ภาพกับคำศัพท์\s*[-\:]?\s*/g, '') || 'มาสนุกกันเลย'}
           </h3>
         </div>
 
@@ -419,7 +419,7 @@ const GameIntro = ({ game, onStart }) => {
               className="flex items-center gap-2 px-6 py-3 bg-white text-purple-700 rounded-full font-black border-4 border-purple-50 shadow-xl text-sm transition-all"
             >
               <Volume2 size={20} fill="currentColor" fillOpacity={0.1} />
-              <span>ฟังชื่อเกม</span>
+
             </motion.button>
           </div>
 
@@ -448,14 +448,10 @@ const GameIntro = ({ game, onStart }) => {
               onClick={onStart}
               className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black text-xl rounded-2xl shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2"
             >
-              เริ่มเล่นเกมเลย!
+              เริ่มเล่นเกมเลย
             </motion.button>
 
-            <div className="inline-flex items-center gap-2 opacity-30">
-              <div className="w-8 h-[2px] bg-gray-300" />
-              <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Ready to Play</p>
-              <div className="w-8 h-[2px] bg-gray-300" />
-            </div>
+
           </div>
         </div>
       </div>
@@ -847,10 +843,10 @@ const GameResult = ({ game, gameId, score, medals, onReset, onExit, onGoToNextGa
   const hasNextGame = currentIdx >= 0 && currentIdx < list.length - 1;
 
   const getMessage = () => {
-    if (score >= 100) return { text: 'สุดเยี่ยม!', emoji: '🏆', color: 'from-yellow-400 to-yellow-500' };
-    if (score >= 80) return { text: 'ยอดเยี่ยม!', emoji: '🎉', color: 'from-purple-500 to-pink-500' };
-    if (score >= 60) return { text: 'ดีมาก!', emoji: '👏', color: 'from-blue-500 to-cyan-500' };
-    return { text: 'พยายามต่อไป!', emoji: '💪', color: 'from-green-500 to-emerald-500' };
+    if (score >= 100) return { text: 'สุดเยี่ยม', emoji: '🏆', color: 'from-yellow-400 to-yellow-500' };
+    if (score >= 80) return { text: 'ยอดเยี่ยม', emoji: '🎉', color: 'from-purple-500 to-pink-500' };
+    if (score >= 60) return { text: 'ดีมาก', emoji: '👏', color: 'from-blue-500 to-cyan-500' };
+    return { text: 'พยายามต่อไป', emoji: '💪', color: 'from-green-500 to-emerald-500' };
   };
 
   const { text, emoji, color } = getMessage();
@@ -1036,7 +1032,7 @@ const FeedbackOverlay = ({ type, message, onComplete }) => {
           transition={{ duration: 0.5, repeat: type === 'correct' ? 1 : 0 }}
           className="text-8xl sm:text-[10rem] mb-2"
         >
-          {type === 'correct' ? '✅' : '❌'}
+          {type === 'correct' ? '✔️' : '❌'}
         </motion.div>
         <h2 className={`text-5xl sm:text-7xl font-black ${type === 'correct' ? 'text-green-600' : 'text-red-600'
           }`}>

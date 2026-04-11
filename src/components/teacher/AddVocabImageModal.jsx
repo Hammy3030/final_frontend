@@ -28,7 +28,7 @@ const AddVocabImageModal = ({ onClose, onAdd, initialData = null }) => {
       toast.error('กรุณาอัปโหลดรูปภาพ');
       return;
     }
-    
+
     try {
       setIsSaving(true);
       await onAdd({ word, label: label || word, image: imagePreview });
@@ -75,8 +75,8 @@ const AddVocabImageModal = ({ onClose, onAdd, initialData = null }) => {
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">คำศัพท์ / พยัญชนะ / ประโยค</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={word}
                 onChange={e => setWord(e.target.value)}
                 placeholder="เช่น ก, ข, ควาย, โรงเรียน"
@@ -85,8 +85,8 @@ const AddVocabImageModal = ({ onClose, onAdd, initialData = null }) => {
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">คำอ่าน / ความหมาย (แสดงใต้รูป - หากมี)</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={label}
                 onChange={e => setLabel(e.target.value)}
                 placeholder="เช่น ก ไก่, ง งู"
@@ -104,13 +104,13 @@ const AddVocabImageModal = ({ onClose, onAdd, initialData = null }) => {
                   <span className="text-xs font-bold text-emerald-600">กดเลือกไฟล์รูปภาพจากเครื่อง</span>
                   <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                 </label>
-                
+
                 {imagePreview ? (
                   <div className="relative w-32 h-32 shrink-0 group">
                     <img src={imagePreview} className="w-full h-full object-cover rounded-2xl shadow-md border-4 border-white" alt="Preview" />
-                    <button 
-                      type="button" 
-                      onClick={() => setImagePreview(null)} 
+                    <button
+                      type="button"
+                      onClick={() => setImagePreview(null)}
                       className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:scale-110 transition-transform"
                     >
                       <X size={14} />
@@ -138,7 +138,7 @@ const AddVocabImageModal = ({ onClose, onAdd, initialData = null }) => {
                 className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 {isSaving ? (
-                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <Save size={20} />
                 )}

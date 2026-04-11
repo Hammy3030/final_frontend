@@ -10,7 +10,7 @@ const LoginPage = () => {
   const [loginType, setLoginType] = useState('teacher'); // 'teacher' or 'student'
   const [isLoading, setIsLoading] = useState(false);
   const { login, isAuthenticated } = useAuth();
-  
+
   const { register, handleSubmit, formState: { errors } } = useForm();
 
   if (isAuthenticated) {
@@ -62,22 +62,20 @@ const LoginPage = () => {
               <button
                 type="button"
                 onClick={() => setLoginType('teacher')}
-                className={`flex-1 py-3 rounded-full font-medium text-lg transition duration-200 focus:outline-none ${
-                  loginType === 'teacher'
+                className={`flex-1 py-3 rounded-full font-medium text-lg transition duration-200 focus:outline-none ${loginType === 'teacher'
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'bg-transparent text-blue-700'
-                }`}
+                  }`}
               >
                 ครู
               </button>
               <button
                 type="button"
                 onClick={() => setLoginType('student')}
-                className={`flex-1 py-3 rounded-full font-medium text-lg transition duration-200 focus:outline-none ${
-                  loginType === 'student'
+                className={`flex-1 py-3 rounded-full font-medium text-lg transition duration-200 focus:outline-none ${loginType === 'student'
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'bg-transparent text-blue-700'
-                }`}
+                  }`}
               >
                 นักเรียน
               </button>
@@ -100,7 +98,7 @@ const LoginPage = () => {
                   <input
                     id="email"
                     type="email"
-                    {...register('email', { 
+                    {...register('email', {
                       required: 'กรุณากรอกอีเมล',
                       pattern: {
                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -124,7 +122,7 @@ const LoginPage = () => {
                     <input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      {...register('password', { 
+                      {...register('password', {
                         required: 'กรุณากรอกรหัสผ่าน',
                         minLength: {
                           value: 6,
@@ -157,11 +155,11 @@ const LoginPage = () => {
                   <input
                     id="studentCode"
                     type="text"
-                    {...register('studentCode', { 
+                    {...register('studentCode', {
                       required: 'กรุณากรอกรหัสนักเรียน',
                       pattern: {
                         value: /^STU\d{3}$/i,
-                        message: 'รหัสนักเรียนต้องเป็นรูปแบบ STU001, STU002, ...'
+                        message: 'รหัสนักเรียนต้องเป็นรูปแบบ STU001'
                       }
                     })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-base uppercase"
@@ -182,11 +180,10 @@ const LoginPage = () => {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoading}
-              className={`w-full py-4 px-4 rounded-xl font-semibold text-lg transition duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-6 ${
-                isLoading
+              className={`w-full py-4 px-4 rounded-xl font-semibold text-lg transition duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mt-6 ${isLoading
                   ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
-              }`}
+                }`}
             >
               {isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
             </motion.button>

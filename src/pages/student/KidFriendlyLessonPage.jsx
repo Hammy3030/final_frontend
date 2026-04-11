@@ -88,7 +88,7 @@ const KidFriendlyLessonPage = () => {
     {
       id: 'summary',
       emoji: '🎉',
-      title: 'เยี่ยม!',
+      title: 'เยี่ยม',
       type: 'summary'
     }
   ];
@@ -763,7 +763,7 @@ const SummaryStep = ({ lesson }) => {
             WebkitTextFillColor: 'transparent'
           }}
         >
-          เยี่ยม!
+          เยี่ยม
         </div>
       </motion.div>
 

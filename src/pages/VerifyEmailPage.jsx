@@ -31,7 +31,7 @@ const VerifyEmailPage = () => {
           // Store token and redirect to dashboard
           localStorage.setItem('token', response.data.data.token);
           setStatus('success');
-          setMessage('ยืนยันอีเมลสำเร็จ! กำลังพาคุณเข้าสู่ระบบ...');
+          setMessage('ยืนยันอีเมลสำเร็จ กำลังพาคุณเข้าสู่ระบบ...');
 
           setTimeout(() => {
             navigate('/dashboard');
@@ -67,7 +67,7 @@ const VerifyEmailPage = () => {
             <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
               <CheckCircle className="w-10 h-10 text-green-500" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">ยืนยันอีเมลสำเร็จ!</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">ยืนยันอีเมลสำเร็จ</h2>
             <p className="text-gray-600 mb-6">{message}</p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <Mail className="w-8 h-8 mx-auto mb-2 text-blue-500" />

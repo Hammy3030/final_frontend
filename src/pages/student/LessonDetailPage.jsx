@@ -187,7 +187,7 @@ const LessonDetailPage = () => {
       <div className="flex items-center justify-center h-dvh bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-blue-500 mx-auto mb-4"></div>
-
+          <p className="text-gray-600">กำลังโหลดบทเรียน...</p>
         </div>
       </div>
     );
@@ -264,7 +264,72 @@ const LessonDetailPage = () => {
         }
       }
 
-
+      // Vocabulary mapping for each lesson (Fallback)
+      const vocabularyMap = {
+        'ก–ง': [
+          { word: 'ไก่', emoji: '🐔', meaning: 'สัตว์ปีกที่ขี้อวด' },
+          { word: 'ไข่', emoji: '🥚', meaning: 'ของที่ไก่ให้' },
+          { word: 'ควาย', emoji: '🐃', meaning: 'สัตว์ตัวใหญ่มีเขา' },
+          { word: 'ระฆัง', emoji: '🔔', meaning: 'เครื่องตีให้เสียงดัง' },
+          { word: 'งู', emoji: '🐍', meaning: 'สัตว์เลื้อยคลาน' },
+          { word: 'กา', emoji: '🐦', meaning: 'นกสีดำ' },
+          { word: 'ขา', emoji: '🦵', meaning: 'อวัยวะที่ใช้เดิน' },
+          { word: 'คา', emoji: '🏠', meaning: 'บ้านเรือน' },
+          { word: 'งา', emoji: '🐘', meaning: 'ของงาช้าง' }
+        ],
+        'จ–ณ': [
+          { word: 'จาน', emoji: '🍽️', meaning: 'ภาชนะใส่อาหาร' },
+          { word: 'ฉิ่ง', emoji: '🔔', meaning: 'เครื่องดนตรีไทย' },
+          { word: 'ช้าง', emoji: '🐘', meaning: 'สัตว์ตัวใหญ่มาก' },
+          { word: 'ซอ', emoji: '🎻', meaning: 'เครื่องดนตรี' }
+        ],
+        'ด–ม': [
+          { word: 'เด็ก', emoji: '👶', meaning: 'คนตัวเล็ก' },
+          { word: 'เต่า', emoji: '🐢', meaning: 'สัตว์มีกระดอง' },
+          { word: 'ถุง', emoji: '👜', meaning: 'ของสำหรับใส่ของ' },
+          { word: 'ทหาร', emoji: '👮', meaning: 'ผู้ปกป้องประเทศ' },
+          { word: 'ธง', emoji: '🚩', meaning: 'ผ้าสำหรับชักขึ้น' },
+          { word: 'หนู', emoji: '🐭', meaning: 'สัตว์ตัวเล็กหางยาว' },
+          { word: 'ใบไม้', emoji: '🍃', meaning: 'ส่วนของต้นไม้' },
+          { word: 'ปลา', emoji: '🐟', meaning: 'สัตว์ในน้ำ' },
+          { word: 'ผึ้ง', emoji: '🐝', meaning: 'แมลงทำน้ำผึ้ง' },
+          { word: 'ม้า', emoji: '🐴', meaning: 'สัตว์ใช้ขี่' }
+        ],
+        'ย–ฮ': [
+          { word: 'ยักษ์', emoji: '👹', meaning: 'ยักษ์ในนิทาน' },
+          { word: 'เรือ', emoji: '🚢', meaning: 'ยานพาหนะในน้ำ' },
+          { word: 'ลิง', emoji: '🐵', meaning: 'สัตว์ที่คล้ายคน' },
+          { word: 'แหวน', emoji: '💍', meaning: 'เครื่องประดับนิ้ว' },
+          { word: 'ศาลา', emoji: '🏛️', meaning: 'อาคารหลังคาใหญ่' },
+          { word: 'สระ', emoji: '🏊', meaning: 'ที่ว่ายน้ำ' },
+          { word: 'หีบ', emoji: '📦', meaning: 'กล่องใส่ของ' },
+          { word: 'อ่าง', emoji: '🛁', meaning: 'ภาชนะใส่น้ำ' },
+          { word: 'ฮูก', emoji: '🦉', meaning: 'นกกลางคืน' }
+        ],
+        'อา': [
+          { word: 'กา', emoji: '🐦', meaning: 'นกสีดำ' },
+          { word: 'ขา', emoji: '🦵', meaning: 'อวัยวะที่ใช้เดิน' },
+          { word: 'คา', emoji: '🏠', meaning: 'บ้านเรือน' },
+          { word: 'งา', emoji: '🐘', meaning: 'ของงาช้าง' },
+          { word: 'จา', emoji: '👋', meaning: 'ทักทาย' },
+          { word: 'ชา', emoji: '☕', meaning: 'เครื่องดื่ม' }
+        ],
+        'อี': [
+          { word: 'กี', emoji: '🏃', meaning: 'เดินเร็ว' },
+          { word: 'ขี', emoji: '✏️', meaning: 'เขียน' },
+          { word: 'คี', emoji: '🤗', meaning: 'กอด' }
+        ],
+        'อือ': [
+          { word: 'กือ', emoji: '🌊', meaning: 'คลื่น' },
+          { word: 'ขือ', emoji: '💨', meaning: 'ลม' },
+          { word: 'คือ', emoji: '💡', meaning: 'เป็น' }
+        ],
+        'อุ': [
+          { word: 'กุ', emoji: '🎯', meaning: 'เป้า' },
+          { word: 'ขุ', emoji: '🏀', meaning: 'ลูกบอล' },
+          { word: 'คุ', emoji: '🗣️', meaning: 'พูด' }
+        ]
+      };
 
       // Try to find matching vocabulary based on lesson title
       if (lessonContent) {
@@ -353,7 +418,7 @@ const LessonDetailPage = () => {
     if (blendingData.length > 0) {
       steps.push({
         id: 'blending',
-        title: ' ผสมเสียง',
+        title: '🔊 ผสมเสียง',
         type: 'blending',
         content: {
           title: 'ผสมเสียง',
@@ -540,8 +605,8 @@ const LessonDetailPage = () => {
       } else {
         // Show big milestone popup instead of small toast for students
         setMilestoneData({
-          title: 'เก่งที่สุดเลย 🎉',
-          // subtitle: 'เรียนจบหัวข้อนี้แล้ว ไปต่อกันเถอะ',
+          title: 'เก่งที่สุดเลย! 🎉',
+          subtitle: 'เรียนจบหัวข้อนี้แล้ว ไปต่อกันเถอะ',
           emoji: '🌟'
         });
         setShowMilestone(true);
@@ -550,30 +615,22 @@ const LessonDetailPage = () => {
   };
 
   const handleNextStep = () => {
-    if (currentStep < lessonSteps.length - 1) {
-      // กรณีทั่วไป: เลื่อนหน้าไปเรื่อยๆ
-      setCurrentStep(prev => prev + 1);
-    } else {
-      // กรณี: อยู่หน้าสุดท้ายของบทเรียน (หน้าที่มีปุ่ม Post-test)
-      if (!isTeacher) {
-
-        // 🚩 แก้ไขจุดนี้: ถ้าสอบผ่าน Post-test ของบทนี้ไปแล้ว
-        if (lesson?.progress?.hasPassedPostTest) {
-
-          // 1. แจ้งเตือนว่าผ่านแล้ว
-          toast.success('คุณสอบผ่านบทเรียนนี้แล้ว กำลังพาไปบทเรียนถัดไป...');
-
-          // 2. Logic การปลดล็อกหรือย้ายไปบทถัดไป 
-          // ปกติเราจะส่งกลับหน้าแสดงรายการบทเรียน เพื่อให้ระบบ Refresh ค่าที่ปลดล็อกใหม่
-          navigate('/dashboard/student/lessons');
-
-          // หรือถ้าคุณมีฟังก์ชันสำหรับข้ามไปบทถัดไปโดยตรง (เช่น findNextLessonId) ให้ใช้ตรงนี้
-          return;
-        }
-
-        // ถ้ายังไม่เคยผ่าน หรือยังไม่เคยทำ ให้พาไปหน้าทำแบบทดสอบปกติ
-        navigate(`/dashboard/student/test/${postTestId}`);
+    const currentStepData = lessonSteps[currentStep];
+    // ถ้าอยู่ขั้นคำศัพท์ ให้ปุ่มถัดไปเลื่อนคำศัพท์ให้จบก่อน
+    if (currentStepData?.type === 'vocabulary') {
+      const totalWords = currentStepData?.content?.words?.length || 0;
+      if (totalWords > 0 && vocabWordIndex < totalWords - 1) {
+        setVocabWordIndex(vocabWordIndex + 1);
+        return;
       }
+    }
+
+    if (currentStep < lessonSteps.length - 1) {
+      handleStepComplete(lessonSteps[currentStep].id);
+      setVocabWordIndex(0);
+      setCurrentStep(currentStep + 1);
+    } else {
+      handleLessonComplete();
     }
   };
 
@@ -632,7 +689,7 @@ const LessonDetailPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success(editingItemIndex !== null ? 'แก้ไขข้อมูลรูปภาพสำเร็จ!' : 'อัปโหลดรูปภาพเข้าสู่บทเรียนเรียบร้อยแล้ว!', { icon: '📸' });
+      toast.success(editingItemIndex !== null ? 'แก้ไขข้อมูลรูปภาพสำเร็จ' : 'อัปโหลดรูปภาพเข้าสู่บทเรียนเรียบร้อยแล้ว', { icon: '📸' });
 
       setEditingItemIndex(null);
       // Update local state to reflect immediately
@@ -718,8 +775,8 @@ const LessonDetailPage = () => {
 
   const handlePrevStep = () => {
     const currentStepData = lessonSteps[currentStep];
-    // ถ้าอยู่ขั้นคำศัพท์ ให้ปุ่มก่อนหน้าถอยคำศัพท์ก่อน
-    if (currentStepData?.type === 'vocabulary' && vocabWordIndex > 0) {
+    // ✅ ปรับปรุง: ถ้าอยู่หน้าคำศัพท์หรือฝึกเขียน ให้ปุ่มก่อนหน้าถอยย่อยก่อน
+    if ((currentStepData?.type === 'vocabulary' || currentStepData?.type === 'activity-writing') && vocabWordIndex > 0) {
       setVocabWordIndex(vocabWordIndex - 1);
       return;
     }
@@ -732,7 +789,7 @@ const LessonDetailPage = () => {
 
   const handleLessonComplete = async () => {
     if (isTeacher) {
-      toast('สิ้นสุดเนื้อหาแล้ว');
+      toast('พรีวิวบทเรียนเสร็จสิ้น (สิ้นสุดเนื้อหาแล้ว)', { icon: '👀' });
       return;
     }
 
@@ -747,8 +804,8 @@ const LessonDetailPage = () => {
 
       setShowConfetti(true);
       setMilestoneData({
-        title: 'เรียนจบแล้ว 🎉',
-        subtitle: 'คุณเก่งมากที่เรียนจนบทนี้',
+        title: 'ยินดีด้วย เรียนจบแล้ว 🎉',
+        subtitle: 'คุณเก่งมากที่เรียนจนจบกหัวข้อนี้ พัฒนาต่อไปนะ',
         emoji: '🏆'
       });
       setShowMilestone(true);
@@ -1085,7 +1142,12 @@ const LessonDetailPage = () => {
                 <><Play size={18} fill="currentColor" /> <span>ทำ Post-test</span></>
               )
             ) : (
-              <><span className="hidden sm:inline">ถัดไป</span><ChevronRight size={18} /></>
+              <div className="flex items-center gap-1.5">
+                <span className="hidden sm:inline">
+                  ถัดไป
+                </span>
+                <ChevronRight size={18} />
+              </div>
             )}
           </button>
         </div>
@@ -1195,52 +1257,39 @@ const BlendingStep = ({ step, playAudio }) => {
   const blending = step.content.blending || [];
 
   return (
-    <div className="h-full flex flex-col items-center justify-start overflow-hidden py-2">
-      {/* 1. Header: ปรับให้กะทัดรัด (Compact) */}
-      <div className="shrink-0 mb-4 w-full max-w-2xl text-center">
-        <h2 className="text-xl sm:text-2xl font-black text-gray-800 flex items-center justify-center gap-3">
-          <span className="tracking-tight">{step.content.title || 'ผสมเสียง'}</span>
+    <div className="h-full flex flex-col gap-4">
+      <div className="shrink-0 text-center pb-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
+          <span className="p-2 bg-blue-100 rounded-lg">🔊</span> {step.content.title}
         </h2>
       </div>
-
-      {/* 2. Blending List: บีบระยะห่างให้เกาะกลุ่มกันมากขึ้น */}
-      <div className="w-full max-w-2xl flex-1 min-h-0 overflow-y-auto px-2 space-y-2 custom-scrollbar flex flex-col items-stretch">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
         {blending.map((item, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            // ปรับ py จาก 3 เหลือ 2 และลด Gap เพื่อให้แถวดูเตี้ยลง
-            className="group bg-white hover:bg-indigo-50/50 rounded-2xl px-5 py-2.5 border-2 border-gray-100 hover:border-blue-200 flex items-center justify-between transition-all shadow-sm"
+            className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg px-4 py-3 border border-blue-200 flex items-center justify-between gap-3"
           >
-            {/* ฝั่งตัวอักษร: ใช้ Font Size ที่ใหญ่แต่ดูสะอาด */}
-            <div className="flex items-center text-xl sm:text-3xl font-black tracking-normal">
-              <span className="text-blue-500 w-[1.2em] text-center">{item.consonant}</span>
-              <span className="text-gray-300 mx-2 text-sm sm:text-lg">+</span>
-              <span className="text-purple-500 w-[1.2em] text-center">{item.vowel}</span>
-              <span className="text-gray-300 mx-3 text-sm sm:text-lg">→</span>
-              <span className="text-emerald-500 bg-emerald-50 px-4 py-1 rounded-xl border border-emerald-100 min-w-[1.8em] text-center">
-                {item.word}
-              </span>
-            </div>
-
-            {/* ปุ่มเสียง: ปรับขนาดให้พอดีกับแถว */}
+            <p className="text-xl sm:text-2xl font-bold text-gray-800">
+              <span className="text-blue-600">{item.consonant}</span>
+              <span className="text-gray-400 mx-1">+</span>
+              <span className="text-purple-600">{item.vowel}</span>
+              <span className="text-gray-400 mx-1">→</span>
+              <span className="text-green-600">{item.word}</span>
+            </p>
             {item.audio && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              <button
                 onClick={() => playAudio(item.audio, `${item.consonant} ${item.vowel} ${item.word}`)}
-                className="shrink-0 w-10 h-10 flex items-center justify-center bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-all shadow-md shadow-emerald-200/50"
+                className="shrink-0 p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition shadow-sm"
               >
-                <Volume2 size={20} fill="currentColor" fillOpacity={0.2} />
-              </motion.button>
+                <Volume2 size={18} />
+              </button>
             )}
           </motion.div>
         ))}
       </div>
-
-
     </div>
   );
 };
@@ -1808,11 +1857,11 @@ const WritingActivityStep = ({ step, onComplete }) => {
         const allDone = words.every(w => newCompleted.has(w));
         if (allDone) {
           onComplete(step.id, wordToWrite, true, 100);
-          toast.success('🎉 เสร็จแล้ว!');
+          toast.success('🎉 เสร็จแล้ว');
         } else {
           const nextIdx = words.findIndex((w, i) => i > currentWordIndex && !newCompleted.has(w));
           if (nextIdx !== -1) {
-            toast.success(`ถูก! ➜ ${words[nextIdx]}`);
+            toast.success(`ถูก ➜ ${words[nextIdx]}`);
             setTimeout(() => { setCurrentWordIndex(nextIdx); }, 600);
           }
         }
@@ -1926,7 +1975,7 @@ const WritingActivityStep = ({ step, onComplete }) => {
             >
               <span className="text-2xl">{isCorrect ? '✅' : '❌'}</span>
               <div className="flex-1">
-                <p className="font-black leading-tight">{isCorrect ? 'เก่งมาก ตรวจสอบแล้วถูกต้อง' : 'ลองใหม่อีกครั้งนะตัวเล็ก'}</p>
+                <p className="font-black leading-tight">{isCorrect ? 'เก่งมาก ตรวจสอบแล้วถูกต้อง' : 'อ๊ะ ลองใหม่อีกครั้งนะตัวเล็ก'}</p>
                 <p className="text-xs opacity-70 italic font-medium">AI อ่านได้ว่า: <b className="text-indigo-600">{detectedText}</b></p>
               </div>
             </motion.div>
@@ -1991,10 +2040,11 @@ const SummaryStep = ({ step, postTestStatus, postTestId, onGoToPostTest }) => {
         <h2 className="text-4xl font-black text-emerald-600 mb-8">เก่งที่สุดเลย</h2>
         <button
           type="button"
-          onClick={readAloud('เรียนจบแล้ว เก่งมาก ต่อไปกดปุ่มสีเขียวเพื่อทำแบบทดสอบหลังเรียนนะค้าบ')}
-          className="text-gray-600 inline-flex items-center gap-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3.5 rounded-2xl font-bold transition"
+          onClick={readAloud('เก่งที่สุดเลย')}
+          className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3.5 rounded-2xl font-bold transition"
         >
           <Volume2 size={22} />
+          ฟังคำชม
         </button>
       </motion.div>
     </div>

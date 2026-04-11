@@ -31,7 +31,7 @@ export const NotificationProvider = ({ children }) => {
             const mockNotifications = [
                 {
                     id: 1,
-                    title: 'ยินดีต้อนรับ!',
+                    title: 'ยินดีต้อนรับ',
                     message: 'ยินดีต้อนรับสู่ BearThai ขอให้สนุกกับการเรียนรู้นะครับ',
                     isRead: false,
                     createdAt: new Date().toISOString()

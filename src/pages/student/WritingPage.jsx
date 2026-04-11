@@ -19,10 +19,10 @@ import { speakText } from '../../utils/speechHelper';
 
 /* ── All 44 Thai consonants ── */
 const ALL_CONSONANTS = [
-  'ก','ข','ฃ','ค','ฅ','ฆ','ง','จ','ฉ','ช','ซ','ฌ','ญ',
-  'ฎ','ฏ','ฐ','ฑ','ฒ','ณ','ด','ต','ถ','ท','ธ','น',
-  'บ','ป','ผ','ฝ','พ','ฟ','ภ','ม','ย','ร','ล','ว',
-  'ศ','ษ','ส','ห','ฬ','อ','ฮ'
+  'ก', 'ข', 'ฃ', 'ค', 'ฅ', 'ฆ', 'ง', 'จ', 'ฉ', 'ช', 'ซ', 'ฌ', 'ญ',
+  'ฎ', 'ฏ', 'ฐ', 'ฑ', 'ฒ', 'ณ', 'ด', 'ต', 'ถ', 'ท', 'ธ', 'น',
+  'บ', 'ป', 'ผ', 'ฝ', 'พ', 'ฟ', 'ภ', 'ม', 'ย', 'ร', 'ล', 'ว',
+  'ศ', 'ษ', 'ส', 'ห', 'ฬ', 'อ', 'ฮ'
 ];
 
 /* ── Floating particle ── */
@@ -260,7 +260,9 @@ const WritingPage = () => {
               <ArrowLeft size={20} />
             </motion.button>
 
-            <h1 className="text-lg font-extrabold text-gray-800">✏️ ฝึกเขียน</h1>
+            <h1 className="w-fit mx-auto text-xl font-extrabold text-gray-800">
+              ✏️ ฝึกเขียน
+            </h1>
 
             <div className="flex items-center gap-1 bg-gradient-to-r from-amber-400 to-yellow-400 text-white px-3 py-1.5 rounded-xl shadow-md shadow-amber-300/40">
               <Trophy size={16} />
@@ -294,8 +296,8 @@ const WritingPage = () => {
           </motion.div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-indigo-400 font-semibold">{currentIndex + 1}/{ALL_CONSONANTS.length}</span>
-            <motion.button
+            <span className="text-xl text-indigo-400 font-semibold">{currentIndex + 1}/{ALL_CONSONANTS.length}</span>
+            {/* <motion.button
               whileTap={{ scale: 0.85 }}
               onClick={() => goToChar(currentIndex - 1)}
               disabled={currentIndex === 0}
@@ -310,20 +312,20 @@ const WritingPage = () => {
               className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 text-white flex items-center justify-center shadow-md disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ChevronRight size={18} />
-            </motion.button>
+            </motion.button> */}
           </div>
         </div>
 
         {/* ── Canvas (fills remaining space) ── */}
         <div className="flex-1 min-h-0 bg-white/90 backdrop-blur-lg rounded-2xl shadow-xl shadow-indigo-100/40 border border-white/50 p-2 mb-2 flex flex-col">
           <div className="relative flex-1 min-h-0 bg-white rounded-xl overflow-hidden shadow-inner"
-               style={{ borderWidth: '3px', borderStyle: 'solid', borderColor: '#c7d2fe' }}>
+            style={{ borderWidth: '3px', borderStyle: 'solid', borderColor: '#c7d2fe' }}>
             {/* Subtle grid lines */}
             <div className="absolute inset-0 pointer-events-none opacity-10"
-                 style={{
-                   backgroundImage: 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)',
-                   backgroundSize: '25% 25%'
-                 }} />
+              style={{
+                backgroundImage: 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)',
+                backgroundSize: '25% 25%'
+              }} />
 
             <canvas
               ref={canvasRef}
@@ -357,17 +359,16 @@ const WritingPage = () => {
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className={`shrink-0 p-3 rounded-xl mb-2 border-2 ${
-                isCorrect
-                  ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300'
-                  : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-300'
-              }`}
+              className={`shrink-0 p-3 rounded-xl mb-2 border-2 ${isCorrect
+                ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300'
+                : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-300'
+                }`}
             >
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{isCorrect ? '🎉' : '💪'}</span>
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm text-gray-800">
-                    {isCorrect ? 'เก่งมาก! ถูกต้อง! ⭐' : 'ลองใหม่นะ! สู้ๆ!'}
+                    {isCorrect ? 'เก่งมาก ถูกต้อง ⭐' : 'ลองใหม่นะ สู้ๆ'}
                     {' '}
                     <span className="text-blue-600">({detectedText})</span>
                   </p>

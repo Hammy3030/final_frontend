@@ -174,7 +174,7 @@ export const AuthProvider = ({ children }) => {
         return login(credentials, true);
       }
       const message = status >= 500
-        ? 'เซิร์ฟเวอร์ขัดข้อง ลองใหม่อีกครั้งในภายหลัง'
+        ? 'ไม่มีบัญชีนี้จ้า'
         : (error.response?.data?.message || error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
       toast.error(message);
       dispatch({ type: 'LOGIN_FAILURE' });
@@ -200,7 +200,7 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         // Don't auto-login after registration - user needs to verify email
         // The backend now returns requiresEmailVerification flag
-        
+
         dispatch({ type: 'SET_LOADING', payload: false });
         toast.success(response.data.message || 'สมัครสมาชิกสำเร็จ กรุณายืนยันอีเมล');
         return { success: true, requiresEmailVerification: true };
