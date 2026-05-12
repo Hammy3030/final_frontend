@@ -25,7 +25,7 @@ const LoginPage = () => {
       } else {
         // For students, login with student code only (no password required)
         await login({
-          email: data.studentCode?.toUpperCase(), // Student code (e.g., STU001)
+          email: data.studentCode?.trim(), // Student code (e.g., stu01-001)
           password: '' // No password required for student login
         });
       }
@@ -158,14 +158,13 @@ const LoginPage = () => {
                     {...register('studentCode', {
                       required: 'กรุณากรอกรหัสนักเรียน',
                       pattern: {
-                        value: /^STU\d{3}$/i,
-                        message: 'รหัสนักเรียนต้องเป็นรูปแบบ STU001'
+                        value: /^(stu|STU)[^@\s]+$/i,
+                        message: 'รูปแบบรหัสนักเรียนไม่ถูกต้อง (เช่น stu01-001)'
                       }
                     })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-base uppercase"
-                    placeholder="กรอกรหัสนักเรียน (เช่น STU001)"
-                    maxLength={6}
-                    style={{ textTransform: 'uppercase' }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-base"
+                    placeholder="กรอกรหัสนักเรียน (เช่น stu01-001)"
+                    maxLength={15}
                   />
                   {errors.studentCode && (
                     <p className="mt-1 text-sm text-red-600">{errors.studentCode.message}</p>

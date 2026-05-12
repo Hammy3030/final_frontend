@@ -23,7 +23,7 @@ import { getApiUrl } from '../../utils/apiConfig';
 import { speak } from '../../utils/textToSpeech';
 
 
-const MockGamePage = () => {
+const StudentGamePage = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
 
@@ -935,23 +935,7 @@ const GameResult = ({ game, gameId, score, medals, onReset, onExit, onGoToNextGa
             )}
           </motion.div>
 
-          {/* Celebration Emojis */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="flex justify-center gap-2 text-2xl sm:text-3xl"
-          >
-            <motion.span animate={{ y: [0, -8, 0] }} transition={{ duration: 0.6, repeat: Infinity }}>
-              ✨
-            </motion.span>
-            <motion.span animate={{ y: [0, -8, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.1 }}>
-              🌟
-            </motion.span>
-            <motion.span animate={{ y: [0, -8, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}>
-              💫
-            </motion.span>
-          </motion.div>
+
 
           {/* Action Buttons */}
           <motion.div
@@ -1032,7 +1016,7 @@ const FeedbackOverlay = ({ type, message, onComplete }) => {
           transition={{ duration: 0.5, repeat: type === 'correct' ? 1 : 0 }}
           className="text-8xl sm:text-[10rem] mb-2"
         >
-          {type === 'correct' ? '✔️' : '❌'}
+          {type === 'correct' ? '✅' : '❌'}
         </motion.div>
         <h2 className={`text-5xl sm:text-7xl font-black ${type === 'correct' ? 'text-green-600' : 'text-red-600'
           }`}>
@@ -1043,4 +1027,4 @@ const FeedbackOverlay = ({ type, message, onComplete }) => {
   );
 };
 
-export default MockGamePage;
+export default StudentGamePage;

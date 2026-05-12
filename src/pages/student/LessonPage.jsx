@@ -11,7 +11,6 @@ import {
   FileText,
   Gamepad2
 } from 'lucide-react';
-import { useAuth } from '../../contexts/MockAuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import Confetti from 'react-confetti';
@@ -111,8 +110,8 @@ const LessonPage = () => {
                 <button
                   onClick={handleAudioToggle}
                   className={`p-2 rounded-lg transition duration-200 ${isAudioPlaying
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                     }`}
                 >
                   {isAudioPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}

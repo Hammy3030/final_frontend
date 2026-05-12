@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { getApiUrl } from '../utils/apiConfig';
 
 const ProfilePage = () => {
   const { user, logout, updateUser } = useAuth();
@@ -27,6 +29,17 @@ const ProfilePage = () => {
     }
   });
 
+  // Reset form when user data changes
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || '',
+        email: user.email || '',
+        school: user.school || '',
+      });
+    }
+  }, [user, reset]);
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -35,13 +48,24 @@ const ProfilePage = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      // Here you would typically make an API call to update the user profile
-      // For now, we'll just update the local state
-      updateUser(data);
-      toast.success('อัปเดตข้อมูลสำเร็จ');
-      setIsEditing(false);
+      const token = localStorage.getItem('token');
+      const response = await axios.put(getApiUrl('/teacher/profile'), data, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.data.success) {
+        // Update the local auth context with the new user data
+        updateUser(response.data.data.user);
+        toast.success('อัปเดตข้อมูลสำเร็จ');
+        setIsEditing(false);
+      } else {
+        throw new Error(response.data.message || 'Update failed');
+      }
     } catch (error) {
-      toast.error('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+      console.error('Update profile error:', error);
+      toast.error(error.response?.data?.message || 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
     } finally {
       setIsLoading(false);
     }

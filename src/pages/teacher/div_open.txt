@@ -1,0 +1,246 @@
+1062:        <div
+1069:        <div className="flex-1">
+1073:        <div className="flex items-center gap-2">
+1087:      <div className="min-h-screen bg-gray-50/50 font-[Sarabun,sans-serif] overflow-y-auto flex items-center justify-center">
+1088:        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+1110:    <div className="min-h-screen bg-gray-50 overflow-y-auto">
+1113:        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+1114:          <div className="flex justify-between items-center h-16">
+1115:            <div className="flex items-center">
+1122:              <div>
+1135:      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+1137:        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+1143:            <div className="flex items-center">
+1144:              <div className="p-3 bg-blue-100 rounded-lg">
+1147:              <div className="ml-4">
+1162:            <div className="flex items-center">
+1163:              <div className="p-3 bg-green-100 rounded-lg">
+1166:              <div className="ml-4">
+1181:            <div className="flex items-center">
+1182:              <div className="p-3 bg-purple-100 rounded-lg">
+1185:              <div className="ml-4">
+1200:            <div className="flex items-center">
+1201:              <div className="p-3 bg-yellow-100 rounded-lg">
+1204:              <div className="ml-4">
+1218:        <div className="bg-white rounded-xl shadow-sm border mb-8">
+1219:          <div className="px-6 py-4 border-b border-gray-200">
+1220:            <div className="flex items-center justify-between mb-4">
+1224:              <div className="flex gap-2">
+1255:            <div className="space-y-3">
+1257:              <div className="relative">
+1283:              <div className="flex flex-wrap gap-3">
+1285:                <div className="flex items-center gap-2">
+1344:                <div className="ml-auto flex items-center gap-2">
+1364:          <div className="p-6">
+1366:              <div className="text-center py-12">
+1367:                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+1370:                <div className="text-center py-8 text-gray-500">
+1385:              <div className="text-center py-12">
+1386:                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+1402:                <div className="space-y-4">
+1411:                      <div className="flex items-center justify-between">
+1412:                        <div className="flex-1">
+1419:                            <div className="mt-2 flex flex-wrap gap-2">
+1420:                              <div className="flex items-center gap-1 text-xs">
+1427:                                <div className="flex items-center gap-1 text-xs">
+1435:                                <div className="w-full mt-1">
+1436:                                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+1440:                                  <div className="w-full bg-gray-200 rounded-full h-2">
+1441:                                    <div
+1451:                        <div className="flex gap-2">
+1485:                  <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
+1486:                    <div className="text-sm text-gray-600">
+1489:                    <div className="flex items-center gap-2">
+1499:                      <div className="flex items-center gap-1">
+1543:        <div className="bg-white rounded-xl shadow-sm border mb-8">
+1544:          <div className="px-6 py-4 border-b border-gray-200">
+1545:            <div className="flex items-center justify-between">
+1550:              <div className="flex gap-2">
+1559:                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+1570:          <div className="p-6">
+1572:              <div className="text-center py-12">
+1573:                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+1576:                <div className="text-center py-8 text-gray-500 ">
+1582:              <div className="space-y-8">
+1601:                    <div key={category} className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+1606:                      <div className="space-y-6">
+1608:                          <div key={chapter}>
+1612:                            <div className="space-y-3 pl-4">
+1614:                                <div
+1618:                                  <div className="flex-1">
+1626:                                  <div className="flex items-center gap-2">
+1627:                                    <div className="flex flex-col mr-2">
+1675:        <div className="bg-white rounded-xl shadow-sm border mb-8">
+1676:          <div className="px-6 py-4 border-b border-gray-200">
+1682:          <div className="p-6">
+1684:            <div className="mb-6 space-y-4">
+1685:              <div className="relative">
+1696:              <div className="flex flex-wrap gap-3">
+1697:                <div className="flex items-center gap-2 bg-white px-3 py-2 border border-gray-200 rounded-xl shadow-sm">
+1711:                <div className="flex items-center gap-2 bg-white px-3 py-2 border border-gray-200 rounded-xl shadow-sm">
+1724:                <div className="flex items-center gap-2 bg-white px-3 py-2 border border-gray-200 rounded-xl shadow-sm ml-auto">
+1740:              <div className="flex items-center justify-center py-12">
+1741:                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+1744:              <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+1749:              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+1758:                    <div className="flex justify-between items-start mb-4">
+1759:                      <div className={`p-3 rounded-xl ${test.isActive ? 'bg-purple-50 text-purple-600' : 'bg-gray-50 text-gray-400'}`}>
+1762:                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+1782:                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
+1783:                      <div className="flex gap-2">
+1810:        <div className="bg-white rounded-xl shadow-sm border mb-8">
+1811:          <div className="px-6 py-4 border-b border-gray-200">
+1817:          <div className="p-6">
+1819:            <div className="mb-6 space-y-4">
+1820:              <div className="relative">
+1831:              <div className="flex flex-wrap gap-3">
+1832:                <div className="flex items-center gap-2 bg-white px-3 py-2 border border-gray-200 rounded-xl shadow-sm">
+1846:                <div className="flex items-center gap-2 bg-white px-3 py-2 border border-gray-200 rounded-xl shadow-sm">
+1859:                <div className="flex items-center gap-2 bg-white px-3 py-2 border border-gray-200 rounded-xl shadow-sm ml-auto">
+1875:              <div className="flex items-center justify-center py-12">
+1876:                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600"></div>
+1879:              <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+1884:              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+1893:                    <div className="flex justify-between items-start mb-4">
+1894:                      <div className={`p-3 rounded-xl ${game.isActive ? 'bg-yellow-50 text-yellow-600' : 'bg-gray-50 text-gray-400'}`}>
+1897:                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+1917:                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
+1918:                      <div className="flex gap-2">
+1942:          <div className="bg-gray-50 rounded-xl shadow-sm border border-gray-300 mb-8">
+1943:            <div className="px-6 py-4 border-b border-gray-300 bg-gray-100">
+1949:            <div className="p-6">
+1952:                <div className="mb-6">
+1957:                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+1959:                      <div key={lesson.id || lesson._id} className="p-4 border border-gray-300 rounded-lg bg-white/50 opacity-75 hover:opacity-100 transition">
+1960:                        <div className="flex justify-between items-start mb-2">
+1961:                          <div className="p-2 bg-gray-100 rounded-lg">
+1984:                <div className="mb-6">
+1989:                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+1991:                      <div key={test.id || test._id} className="p-4 border border-gray-300 rounded-lg bg-white/50 opacity-75 hover:opacity-100 transition">
+1992:                        <div className="flex justify-between items-start mb-2">
+1993:                          <div className="p-2 bg-gray-100 rounded-lg">
+2005:                        <div className="flex items-center justify-between text-sm text-gray-600 mt-2">
+2021:                <div>
+2026:                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+2028:                      <div key={game.id || game._id} className="p-4 border border-gray-300 rounded-lg bg-white/50 opacity-75 hover:opacity-100 transition">
+2029:                        <div className="flex justify-between items-start mb-2">
+2030:                          <div className="p-2 bg-gray-100 rounded-lg">
+2042:                        <div className="flex items-center justify-between text-sm text-gray-600 mt-2">
+2114:            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+2126:            <div className="p-6">
+2127:              <div className="mb-6">
+2129:                <div className="flex gap-2 mb-4">
+2137:                <div className="bg-gray-50 rounded-lg p-4">
+2146:                <div>
+2148:                  <div className="space-y-4">
+2150:                      <div key={game.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+2151:                        <div className="flex items-center gap-2 mb-3">
+2158:                          <div className="mt-3">
+2161:                              <div>
+2163:                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+2165:                                    <div key={pair.id || idx} className="bg-gray-50 border border-gray-200 rounded-lg p-2">
+2166:                                      <div className="flex flex-col items-center gap-1">
+2186:                              <div className="space-y-3">
+2187:                                <div>
+2189:                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+2191:                                      <div key={item.id || idx} className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
+2197:                                <div>
+2199:                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+2201:                                      <div key={target.id || idx} className="bg-gray-50 border border-gray-200 rounded-lg p-2">
+2202:                                        <div className="flex items-center gap-2">
+2258:            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+2270:            <div className="p-6">
+2271:              <div className="mb-6">
+2273:                <div className="flex gap-2 mb-4">
+2289:                <div className="space-y-4">
+2291:                    <div key={q.id || idx} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+2292:                      <div className="flex items-start justify-between mb-3">
+2308:                        <div className="mb-3">
+2313:                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+2321:                              <div key={optIdx} className={`relative flex flex-col items-center justify-center p-4 rounded-xl transition-all ${isCorrect ? 'bg-green-50 border-2 border-green-500 shadow-sm' : 'bg-white border-2 border-gray-100 hover:border-indigo-100'}`}>
+2324:                                  <div className="absolute top-2 right-2 bg-green-500 text-white p-1 rounded-full shadow-sm z-10">
+2330:                                <div className={`absolute top-2 left-2 w-7 h-7 flex items-center justify-center rounded-lg font-black text-sm ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+2334:                                <div className="mt-4 flex flex-col items-center gap-3 w-full">
+2356:                        <div className="mb-3 space-y-2">
+2359:                            <div key={pairIdx} className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded">
+2360:                              <div className="flex items-center gap-2">
+2367:                              <div className="flex items-center gap-2">
+2378:                        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+2388:                <div className="text-center py-8 text-gray-500">
+2416:            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+2428:            <div className="p-6">
+2429:              <div className="mb-6">
+2431:                <div className="flex gap-2 mb-4">
+2438:                <div className="bg-gray-50 rounded-lg p-4">
+2442:                    <div>
+2444:                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+2446:                          <div key={pair.id || idx} className="bg-white border border-gray-200 rounded-lg p-3">
+2447:                            <div className="flex flex-col items-center gap-2">
+2467:                    <div className="space-y-4">
+2468:                      <div>
+2470:                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+2472:                            <div key={item.id || idx} className="bg-white border border-gray-200 rounded-lg p-3">
+2478:                      <div>
+2480:                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+2482:                            <div key={target.id || idx} className="bg-white border border-gray-200 rounded-lg p-3">
+2483:                              <div className="flex items-center gap-3">
+2492:                                <div>
+2539:            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 flex items-center justify-between z-10">
+2540:              <div>
+2555:            <div className="p-6">
+2557:                <div className="flex items-center justify-center py-12">
+2558:                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+2563:                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+2564:                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+2565:                      <div className="flex items-center gap-3">
+2566:                        <div className="p-2 bg-blue-500 rounded-lg">
+2569:                        <div>
+2578:                    <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-4 border border-green-200">
+2579:                      <div className="flex items-center gap-3">
+2580:                        <div className="p-2 bg-green-500 rounded-lg">
+2583:                        <div>
+2592:                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+2593:                      <div className="flex items-center gap-3">
+2594:                        <div className="p-2 bg-purple-500 rounded-lg">
+2597:                        <div>
+2606:                    <div className="bg-gradient-to-br from-yellow-50 to-orange-100 rounded-xl p-4 border border-yellow-200">
+2607:                      <div className="flex items-center gap-3">
+2608:                        <div className="p-2 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg">
+2611:                        <div>
+2622:                  <div className="bg-white rounded-xl border border-gray-200 mb-6">
+2623:                    <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+2629:                    <div className="p-6">
+2630:                      <div className="space-y-3">
+2634:                            <div key={lesson.id || lesson._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+2635:                              <div className="flex items-center justify-between mb-2">
+2636:                                <div className="flex items-center gap-3">
+2637:                                  <div className={`p-2 rounded-lg ${progress?.isCompleted ? 'bg-green-100' : progress ? 'bg-blue-100' : 'bg-gray-100'}`}>
+2646:                                  <div>
+2651:                                <div className="flex items-center gap-4 text-sm">
+2685:                  <div className="bg-white rounded-xl border border-gray-200 mb-6">
+2686:                    <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+2692:                    <div className="p-6">
+2694:                        <div className="text-center py-8 text-gray-500">ยังไม่ได้ทำแบบทดสอบ</div>
+2696:                        <div className="space-y-4">
+2708:                              <div key={test._id || test.id || idx} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+2709:                                <div className="flex items-center justify-between mb-3">
+2710:                                  <div className="flex-1">
+2712:                                    <div className="flex gap-2 mt-1 flex-wrap">
+2725:                                    <div className="text-right ml-4">
+2734:                                  <div className="mt-3 pt-3 border-t border-gray-200">
+2735:                                    <div className="flex items-center justify-between text-sm">
+2736:                                      <div>
+2742:                                      <div className="text-right text-xs text-gray-500">
+2760:                                  <div className="mt-3 pt-3 border-t border-gray-200">
+2765:                                      <div className="mt-3 space-y-2 max-h-60 overflow-y-auto">
+2767:                                          <div key={attempt._id || attempt.id || attemptIdx} className={`flex items-center justify-between p-3 rounded-lg border ${attempt.isPassed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+2768:                                            <div className="flex items-center gap-3">
+2777:                                            <div className="text-right text-xs text-gray-500">
+2799:                    <div className="bg-white rounded-xl border border-gray-200">
+2800:                      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+2806:                      <div className="p-6">
+2807:                        <div className="space-y-3">
+2811:                              <div key={attempt._id || attempt.id || idx} className="border border-gray-200 rounded-lg p-4">
+2812:                                <div className="flex items-center justify-between">
+2813:                                  <div>
+2817:                                  <div className="text-right">

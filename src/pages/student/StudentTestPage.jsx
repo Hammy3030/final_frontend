@@ -11,7 +11,8 @@ import {
   AlertCircle,
   ChevronRight,
   ChevronLeft,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -22,7 +23,7 @@ import { speakText } from '../../utils/speechHelper';
 import { useAuth } from '../../contexts/AuthContext';
 import AudioButton from '../../components/AudioButton';
 
-const MockTestPage = () => {
+const StudentTestPage = () => {
   const { testId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -181,10 +182,11 @@ const MockTestPage = () => {
         setTestState('result');
         if (score >= (test?.passingScore || 60)) {
           setShowConfetti(true);
-          toast.success(`🎉 คะแนน ${score}%`);
+          toast.success(`คะแนน ${score}%`);
           // Mark the Post-Test as completed
           markPostTestCompleted();
-        } else {
+        } else if (test?.type !== 'PRE_TEST') {
+          // แจ้งเตือนคะแนนไม่ผ่านเกณฑ์ เฉพาะที่ไม่ใช่ Pre-test
           toast.error(`คุณทำคะแนนได้ ${score}% แต่ต้องได้ ${test?.passingScore || 60}% ขึ้นไป`);
         }
       } else {
@@ -577,114 +579,103 @@ const MockTestPage = () => {
                         </div>
                       )}
 
-                      {/* Options */}
+                      {/* Options Section - ปรับปรุงความสูงให้สมส่วน ไม่โย่งเกินไป */}
                       {!currentQuestion.isMatching ? (
-                        <>
-                          {/* Show imageOptions as Row 1 for multiple choice */}
-                          {currentQuestion.imageOptions && currentQuestion.imageOptions.length > 0 && currentQuestion.isMultipleChoice && (
-                            <div className="mb-2">
-                              <div className="grid grid-cols-2 gap-2">
-                                {currentQuestion.imageOptions.map((imgUrl, imgIdx) => (
-                                  <div key={imgIdx} className="bg-white rounded-xl border-2 border-gray-10 p-2 shadow-sm">
-                                    <img
-                                      src={imgUrl}
-                                      alt={`Option ${imgIdx + 1}`}
-                                      className="w-full h-20 sm:h-24 object-contain rounded-lg"
-                                      onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.parentElement.innerHTML = '<div class="text-center text-gray-400 text-xs">ไม่พบรูป</div>';
-                                      }}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {/* Row 2: Text options */}
-                          <div className={`grid ${currentQuestion.isMultipleChoice ? 'grid-cols-4' : 'grid-cols-2'} gap-2`}>
+                        <div className="w-full max-w-4x mx-auto py-2 px-6 sm:px-10">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 justify-center">
                             {currentQuestion.options.map((option, index) => {
                               const questionId = currentQuestion._id || currentQuestion.id;
                               const isSelected = currentQuestion.isMultipleChoice
                                 ? Array.isArray(answers[questionId]) && answers[questionId].includes(index)
                                 : answers[questionId] === index;
 
-                              // Extract emoji and text from option (format: "🐍 งู → ง")
-                              const emojiMatch = option.match(/[\u{1F300}-\u{1F9FF}]/u);
-                              const emoji = emojiMatch ? emojiMatch[0] : null;
-                              const textParts = option.split('→');
-                              const displayText = textParts.length > 1 ? textParts[1].trim() : option;
+                              const optionImage = currentQuestion.imageOptions && currentQuestion.imageOptions[index];
+                              const displayText = option.split('→').pop().trim();
 
-                              // Get corresponding image if imageOptions exist
-                              // const optionImage = currentQuestion.imageOptions && currentQuestion.imageOptions[index];
-
-                              // Kid-friendly background colors by index
                               const colors = [
-                                'border-rose-200 bg-rose-50/30',
-                                'border-amber-200 bg-amber-50/30',
-                                'border-emerald-200 bg-emerald-50/30',
-                                'border-sky-200 bg-sky-50/30',
+                                'border-rose-200 bg-rose-50/40',
+                                'border-amber-200 bg-amber-50/40',
+                                'border-emerald-200 bg-emerald-50/40',
+                                'border-sky-200 bg-sky-50/40',
                               ];
-                              const colorClass = colors[index % colors.length];
 
                               return (
-                                <motion.div  /* ✅ แก้จาก motion.button เป็น motion.div */
+                                <motion.div
                                   key={index}
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
+                                  whileHover={{ scale: 1.03 }}
+                                  whileTap={{ scale: 0.97 }}
                                   onClick={() => {
                                     if (currentQuestion.isMultipleChoice) {
                                       const currentAnswers = Array.isArray(answers[questionId]) ? answers[questionId] : [];
-                                      const newAnswers = currentAnswers.includes(index)
-                                        ? currentAnswers.filter(i => i !== index)
-                                        : [...currentAnswers, index];
+                                      const newAnswers = currentAnswers.includes(index) ? currentAnswers.filter(i => i !== index) : [...currentAnswers, index];
                                       handleAnswerSelect(questionId, newAnswers);
                                     } else {
                                       handleAnswerSelect(questionId, index);
                                     }
                                   }}
-                                  className={`group relative p-6 rounded-[2rem] border-2 transition-all cursor-pointer ${isSelected
-                                    ? 'border-indigo-500 bg-indigo-50 shadow-xl ring-2 ring-indigo-200 ring-offset-2'
-                                    : `${colorClass} hover:shadow-lg hover:border-indigo-300`
+                                  // เปลี่ยนจาก h-40 เป็น h-auto และใช้ min-h แทน เพื่อให้ปุ่มเตี้ยลงและดูสมส่วน
+                                  className={`group relative p-3 sm:p-4 rounded-[1.8rem] sm:rounded-[2.2rem] border-[3px] sm:border-4 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 min-h-[120px] sm:min-h-[160px] h-auto ${isSelected
+                                    ? 'border-indigo-500 bg-indigo-50 shadow-xl ring-4 ring-indigo-100/50'
+                                    : `${colors[index % colors.length]} hover:border-indigo-300 shadow-sm`
                                     }`}
                                 >
-                                  <div className="flex flex-col items-center justify-center gap-2">
-                                    {emoji && !(currentQuestion.isMultipleChoice && currentQuestion.imageOptions) && (
-                                      <div className="text-4xl mb-1 drop-shadow-sm">{emoji}</div>
-                                    )}
-                                    <div className="flex items-center gap-2">
-                                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected
-                                        ? 'border-indigo-500 bg-indigo-500 shadow-sm'
-                                        : 'border-gray-300 bg-white group-hover:border-indigo-300'
+                                  {/* ส่วนรูปภาพ - ถ้ามีรูปให้แสดง ถ้าไม่มีส่วนนี้จะไม่กินที่จนปุ่มโย่ง */}
+                                  {optionImage && (
+                                    <div className="w-full aspect-square max-h-24 sm:max-h-32 flex items-center justify-center bg-white rounded-2xl p-2 mb-1 shadow-inner border border-white/50">
+                                      <img
+                                        src={optionImage}
+                                        alt={displayText}
+                                        className="max-w-full max-h-full object-contain"
+                                      />
+                                    </div>
+                                  )}
+
+                                  {/* ส่วนข้อความ - แสดงเฉพาะเมื่อมีข้อความ */}
+                                  {displayText && (
+                                    <div className="flex items-center justify-center gap-2 w-full shrink-0 mt-2">
+                                      <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 bg-white'
                                         }`}>
-                                        <div className={`w-2 h-2 rounded-full bg-white transition-transform ${isSelected ? 'scale-100' : 'scale-0'}`} />
+                                        <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white transition-all ${isSelected ? 'scale-100' : 'scale-0'}`} />
                                       </div>
-                                      <div className="flex items-center gap-1">
-                                        <span className={`text-sm sm:text-lg font-black text-center leading-tight ${isSelected ? 'text-indigo-900' : 'text-gray-700'}`}>
-                                          {displayText}
-                                        </span>
-                                        {/* ✅ ใส่ onClick stopPropagation เพื่อไม่ให้กดเสียงแล้วเป็นการเลือกคำตอบซ้ำ */}
-                                        <AudioButton
-                                          text={displayText}
-                                          variant="mini"
-                                          iconSize={12}
-                                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                                          onClick={(e) => e.stopPropagation()}
-                                        />
+
+                                      <span className={`text-[18px] sm:text-3xl font-black truncate ${isSelected ? 'text-indigo-900' : 'text-gray-700'
+                                        }`}>
+                                        {displayText}
+                                      </span>
+
+                                      <AudioButton
+                                        text={displayText}
+                                        variant="mini"
+                                        iconSize={12}
+                                        onClick={(e) => e.stopPropagation()}
+                                      />
+                                    </div>
+                                  )}
+
+                                  {/* แสดงเฉพาะ Radio button ถ้าไม่มีข้อความ */}
+                                  {!displayText && (
+                                    <div className="absolute top-2 left-2 flex items-center justify-center z-10">
+                                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 bg-white shadow-sm'
+                                        }`}>
+                                        <div className={`w-2.5 h-2.5 rounded-full bg-white transition-all ${isSelected ? 'scale-100' : 'scale-0'}`} />
                                       </div>
                                     </div>
-                                  </div>
+                                  )}
                                 </motion.div>
                               );
                             })}
                           </div>
-                        </>
+                        </div>
+
+
+
                       ) : (
                         /* Matching Question - Simple Inline Interface */
                         <div className="space-y-4 text-center flex flex-col items-center -mt-10">
                           {/* Simple instruction */}
                           <div className="flex items-center justify-center gap-3 bg-indigo-50/50 px-6 py-2 rounded-full border border-indigo-100 shadow-sm">
                             <p className="text-xl sm:text-2xl font-black text-indigo-600">
-                              แตะที่ตัวพยัญชนะ แล้วเลือกรูปภาพที่ตรงกัน
+                              วิธีการใช้งาน
                             </p>
                             <AudioButton text="แตะที่ตัวพยัญชนะ แล้วเลือกรูปภาพที่ตรงกันน้าค้าบ" variant="mini" iconSize={24} />
                           </div>
@@ -707,7 +698,7 @@ const MockTestPage = () => {
                                     className={`w-20 h-20 sm:w-28 sm:h-28 rounded-[1.5rem] sm:rounded-[2rem] border-4 flex items-center justify-center text-3xl sm:text-5xl font-black shrink-0 transition-all cursor-pointer ${isActive
                                       ? 'border-indigo-500 bg-indigo-500 text-white shadow-xl scale-105'
                                       : selectedOption !== undefined
-                                        ? 'border-green-400 bg-green-50 text-green-700 shadow-lg'
+                                        ? 'border-blue-400 bg-blue-50 text-blue-700 shadow-lg'
                                         : 'border-gray-200 bg-white text-indigo-600 hover:border-indigo-300 shadow-md'
                                       }`}
                                   >
@@ -719,12 +710,12 @@ const MockTestPage = () => {
 
                                   {/* Right: Option choices or matched result */}
                                   {selectedOption !== undefined ? (
-                                    <div className="flex-1 flex items-center gap-4 bg-green-50 border-4 border-green-200 rounded-[2rem] px-6 py-4 shadow-inner">
+                                    <div className="flex-1 flex items-center gap-4 bg-blue-50 border-4 border-blue-200 rounded-[2rem] px-6 py-4 shadow-inner">
                                       {matchedImage && (
                                         <img src={matchedImage} alt="" className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md" />
                                       )}
-                                      <span className="text-xl font-black text-green-700">{currentQuestion.options?.[selectedOption]}</span>
-                                      <span className="text-green-500 ml-auto text-2xl font-bold">✓</span>
+                                      <span className="text-xl font-black text-blue-700">{currentQuestion.options?.[selectedOption]}</span>
+                                      <span className="text-red-500 ml-auto text-2xl font-bold"></span>
                                       <button
                                         onClick={() => {
                                           const newMatches = { ...userMatches };
@@ -733,7 +724,7 @@ const MockTestPage = () => {
                                         }}
                                         className="p-2 text-red-400 hover:text-red-600 transition-colors hover:bg-red-50 rounded-full"
                                       >
-                                        <XCircle size={24} />
+                                        <Trash2 size={24} />
                                       </button>
                                     </div>
                                   ) : isActive ? (
@@ -879,281 +870,284 @@ const MockTestPage = () => {
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* Result Screen */}
-      {testState === 'result' && (
-        <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 flex items-start justify-center">
-          {!showReview ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative"
-            >
-              {/* Premium Gradient Header */}
-              <div className="relative bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 px-6 py-10 text-center overflow-hidden">
-                <div className="absolute top-0 left-0 w-24 h-24 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2" />
-                <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-1/3 translate-y-1/3" />
+      {
+        testState === 'result' && (
+          <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 flex items-start justify-center">
+            {!showReview ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative"
+              >
+                {/* Premium Gradient Header */}
+                <div className="relative bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-400 px-6 py-10 text-center overflow-hidden">
+                  <div className="absolute top-0 left-0 w-24 h-24 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2" />
+                  <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-1/3 translate-y-1/3" />
 
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", damping: 10, stiffness: 100 }}
-                  className="text-7xl mb-4 relative z-10 drop-shadow-lg"
-                >
-                  {calculateScore() >= (test?.passingScore || 60) ? '🏆' : '💪'}
-                </motion.div>
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", damping: 10, stiffness: 100 }}
+                    className="text-7xl mb-4 relative z-10 drop-shadow-lg"
+                  >
+                    {test?.type === 'PRE_TEST' ? '📝' : (calculateScore() >= (test?.passingScore || 60) ? '🏆' : '✌🏻')}
+                  </motion.div>
 
-                <div className="flex items-center justify-center gap-2 mb-2 relative z-10">
-                  <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-sm">
-                    {calculateScore() >= (test?.passingScore || 60) ? ' สอบผ่านแล้ว' : 'พยายามเข้านะ'}
-                  </h2>
-                  <AudioButton
-                    text={calculateScore() >= (test?.passingScore || 60) ? 'คุณสอบผ่านแล้ว เก่งมากเลย' : 'พยายามเข้านะ ลองทำใหม่อีกครั้ง'}
-                    variant="mini"
-                    className="!bg-white/20 !text-white hover:!bg-white/40"
-                    iconSize={20}
-                  />
-                </div>
+                  <div className="flex items-center justify-center gap-2 mb-2 relative z-10">
+                    <h2 className="text-2xl sm:text-3xl font-black text-white drop-shadow-sm">
+                      {test?.type === 'PRE_TEST' ? 'ทำแบบทดสอบเสร็จแล้ว' : (calculateScore() >= (test?.passingScore || 60) ? ' สอบผ่าน' : 'พยายามเข้า')}
+                    </h2>
+                    <AudioButton
+                      text={test?.type === 'PRE_TEST' ? 'เก่งมาก ทำแบบทดสอบเสร็จแล้ว กดปุ่มเพื่อเข้าสู่บทเรียน' : (calculateScore() >= (test?.passingScore || 60) ? 'เก่งมาก คุณสอบผ่าน กดปุ่มสีส้มเพื่อเล่นเกม' : 'พยายามเข้า ลองทำใหม่อีกครั้ง')}
+                      variant="mini"
+                      className="!bg-white/20 !text-white hover:!bg-white/40"
+                      iconSize={20}
+                    />
+                  </div>
 
-                <div className="flex justify-center gap-2">
-                  {[1, 2, 3].map((star) => (
-                    <motion.div
-                      key={star}
-                      initial={{ scale: 0, rotate: -20 }}
-                      animate={{
-                        scale: star <= getStarRating(calculateScore()) ? 1 : 0.8,
-                        rotate: 0,
-                        opacity: star <= getStarRating(calculateScore()) ? 1 : 0.4
-                      }}
-                      transition={{ delay: 0.2 + (star * 0.1) }}
-                    >
-                      <Star
-                        size={32}
-                        className={star <= getStarRating(calculateScore())
-                          ? 'text-yellow-300 fill-yellow-300 drop-shadow-md'
-                          : 'text-white/30'
-                        }
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="px-6 py-8">
-                <div className="bg-indigo-50 border-2 border-indigo-100 rounded-3xl p-6 mb-8 shadow-inner">
-                  <div className="flex justify-around items-end">
-                    <div className="text-center">
-                      <p className="text-xs text-indigo-400 font-bold uppercase tracking-widest mb-1">คะแนน</p>
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-5xl font-black text-indigo-600 leading-none">{calculateScore()}</span>
-                        <span className="text-xl font-bold text-indigo-300">/100</span>
-                        <AudioButton text={`คุณได้ ${calculateScore()} คะแนน`} variant="mini" iconSize={14} className="ml-1" />
-                      </div>
-                    </div>
-                    <div className="w-px h-12 bg-indigo-100" />
-                    <div className="text-center">
-                      <p className="text-xs text-purple-400 font-bold uppercase tracking-widest mb-1">ถูกต้อง</p>
-                      <div className="flex items-baseline justify-center">
-                        <span className="text-5xl font-black text-purple-600 leading-none">{getCorrectCount()}</span>
-                        <span className="text-xl font-bold text-purple-300 ml-1">/{questions.length}</span>
-                      </div>
-                    </div>
+                  <div className="flex justify-center gap-2">
+                    {[1, 2, 3].map((star) => (
+                      <motion.div
+                        key={star}
+                        initial={{ scale: 0, rotate: -20 }}
+                        animate={{
+                          scale: star <= getStarRating(calculateScore()) ? 1 : 0.8,
+                          rotate: 0,
+                          opacity: star <= getStarRating(calculateScore()) ? 1 : 0.4
+                        }}
+                        transition={{ delay: 0.2 + (star * 0.1) }}
+                      >
+                        <Star
+                          size={32}
+                          className={star <= getStarRating(calculateScore())
+                            ? 'text-yellow-300 fill-yellow-300 drop-shadow-md'
+                            : 'text-white/30'
+                          }
+                        />
+                      </motion.div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  {test?.type === 'POST_TEST' && calculateScore() < (test?.passingScore || 60) ? (
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={startTest}
-                      className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl font-black text-lg hover:shadow-xl transition shadow-lg shadow-indigo-100"
-                    >
-                      🔄 ลองทำใหม่อีกครั้ง
-                    </motion.button>
-                  ) : test?.type === 'PRE_TEST' ? (
-                    <motion.button
-                      whileHover={{ scale: 1.02, y: -4 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        const lessonId = test?.lessonId || test?.lesson_id || test?.lesson?.id || test?.lesson?._id;
-                        if (lessonId) {
-                          navigate(`/dashboard/student/lessons/${lessonId}`);
-                        } else {
-                          navigate('/dashboard/student/lessons');
-                        }
-                      }}
-                      className="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-2xl font-black text-lg hover:shadow-xl transition shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
-                    >
-                      <span className="text-2xl"></span>
-                      ไปเรียนบทเรียนต่อ
-                    </motion.button>
-                  ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.02, y: -4 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        const isTeacher = user?.role === 'TEACHER';
-                        const lessonId = test?.lessonId || test?.lesson_id;
+                <div className="px-6 py-8">
+                  <div className="bg-indigo-50 border-2 border-indigo-100 rounded-3xl p-6 mb-8 shadow-inner">
+                    <div className="flex justify-around items-end">
+                      <div className="text-center">
+                        <p className="text-xs text-indigo-400 font-bold uppercase tracking-widest mb-1">คะแนน</p>
+                        <div className="flex items-baseline justify-center gap-1">
+                          <span className="text-5xl font-black text-indigo-600 leading-none">{calculateScore()}</span>
+                          <span className="text-xl font-bold text-indigo-300">/100</span>
+                          <AudioButton text={`คุณได้ ${calculateScore()} คะแนน`} variant="mini" iconSize={14} className="ml-1" />
+                        </div>
+                      </div>
+                      <div className="w-px h-12 bg-indigo-100" />
+                      <div className="text-center">
+                        <p className="text-xs text-purple-400 font-bold uppercase tracking-widest mb-1">ถูกต้อง</p>
+                        <div className="flex items-baseline justify-center">
+                          <span className="text-5xl font-black text-purple-600 leading-none">{getCorrectCount()}</span>
+                          <span className="text-xl font-bold text-purple-300 ml-1">/{questions.length}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                        // Try to find the first playable game for students
-                        const playableGames = (test?.lesson?.games || []).filter(g => !g?.isDeleted && g?.type !== 'DRAG_DROP');
-                        const firstGameId = playableGames.length > 0 ? (playableGames[0].id || playableGames[0]._id) : null;
+                  <div className="space-y-3">
+                    {test?.type === 'POST_TEST' && calculateScore() < (test?.passingScore || 60) ? (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={startTest}
+                        className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl font-black text-lg hover:shadow-xl transition shadow-lg shadow-indigo-100"
+                      >
+                        🔄 ลองทำใหม่อีกครั้ง
+                      </motion.button>
+                    ) : test?.type === 'PRE_TEST' ? (
+                      <motion.button
+                        whileHover={{ scale: 1.02, y: -4 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          const lessonId = test?.lessonId || test?.lesson_id || test?.lesson?.id || test?.lesson?._id;
+                          if (lessonId) {
+                            navigate(`/dashboard/student/lessons/${lessonId}`);
+                          } else {
+                            navigate('/dashboard/student/lessons');
+                          }
+                        }}
+                        className="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-2xl font-black text-lg hover:shadow-xl transition shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                      >
+                        <span className="text-2xl"></span>
+                        เข้าสู่บทเรียน
+                      </motion.button>
+                    ) : (
+                      <motion.button
+                        whileHover={{ scale: 1.02, y: -4 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          const isTeacher = user?.role === 'TEACHER';
+                          const lessonId = test?.lessonId || test?.lesson_id;
 
-                        if (test?.type === 'POST_TEST' && !isTeacher && firstGameId) {
-                          navigate(`/dashboard/student/games/${firstGameId}`);
-                        } else if (lessonId) {
-                          navigate(isTeacher ? `/dashboard/teacher/lessons/${lessonId}` : `/dashboard/student/lessons/${lessonId}`);
-                        } else {
-                          navigate(isTeacher ? '/dashboard/teacher' : '/dashboard/student');
-                        }
-                      }}
-                      className="w-full py-4 bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 text-white rounded-2xl font-black text-lg hover:shadow-xl transition shadow-lg shadow-orange-100 flex items-center justify-center gap-2"
+                          // Try to find the first playable game for students
+                          const playableGames = (test?.lesson?.games || []).filter(g => !g?.isDeleted && g?.type !== 'DRAG_DROP');
+                          const firstGameId = playableGames.length > 0 ? (playableGames[0].id || playableGames[0]._id) : null;
+
+                          if (test?.type === 'POST_TEST' && !isTeacher && firstGameId) {
+                            navigate(`/dashboard/student/games/${firstGameId}`);
+                          } else if (lessonId) {
+                            navigate(isTeacher ? `/dashboard/teacher/lessons/${lessonId}` : `/dashboard/student/lessons/${lessonId}`);
+                          } else {
+                            navigate(isTeacher ? '/dashboard/teacher' : '/dashboard/student');
+                          }
+                        }}
+                        className="w-full py-4 bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 text-white rounded-2xl font-black text-lg hover:shadow-xl transition shadow-lg shadow-orange-100 flex items-center justify-center gap-2"
+                      >
+                        <span className="text-2xl animate-bounce">{test?.type === 'POST_TEST' ? '🎮' : '📚'}</span>
+                        {test?.type === 'POST_TEST' ? 'เล่นเกม' : 'กลับไปบทเรียน'}
+                      </motion.button>
+                    )}
+
+                    <button
+                      onClick={() => setShowReview(true)}
+                      className="w-full py-3.5 bg-white text-gray-500 hover:text-indigo-600 font-bold text-base rounded-2xl transition border-2 border-gray-100 hover:border-indigo-100 flex items-center justify-center gap-2"
                     >
-                      <span className="text-2xl animate-bounce">{test?.type === 'POST_TEST' ? '🎮' : '📚'}</span>
-                      {test?.type === 'POST_TEST' ? 'ไปเล่นเกมกัน' : 'กลับไปบทเรียน'}
-                    </motion.button>
-                  )}
-
+                      <FileText size={20} />
+                      เฉลย
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              /* Answer Summary View */
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl flex flex-col h-[85vh]"
+              >
+                {/* Summary Header */}
+                <div className="p-5 border-b flex items-center justify-between bg-indigo-50/50">
                   <button
-                    onClick={() => setShowReview(true)}
-                    className="w-full py-3.5 bg-white text-gray-500 hover:text-indigo-600 font-bold text-base rounded-2xl transition border-2 border-gray-100 hover:border-indigo-100 flex items-center justify-center gap-2"
+                    onClick={() => setShowReview(false)}
+                    className="p-2 hover:bg-white rounded-full transition-colors"
                   >
-                    <FileText size={20} />
-                    ดูสรุปคำตอบละเอียด
+                    <ArrowLeft size={24} className="text-indigo-600" />
+                  </button>
+                  <h3 className="text-xl font-black text-indigo-900">สรุปคำตอบของคุณ</h3>
+                  <div className="w-10" />
+                </div>
+
+                {/* Summary List */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 pt-6">
+                  {questions.map((q, idx) => {
+                    const questionId = q._id || q.id;
+                    const userAnswer = answers[questionId];
+                    const correctAnswer = q.correctAnswer;
+
+                    let isCorrect = false;
+                    if (q.isMatching) {
+                      const matchingPairs = q.matchingPairs || [];
+                      isCorrect = true;
+                      for (let i = 0; i < matchingPairs.length; i++) {
+                        if (userAnswer?.[i] !== q.options.indexOf(matchingPairs[i].right)) {
+                          isCorrect = false; break;
+                        }
+                      }
+                    } else if (q.isMultipleChoice) {
+                      isCorrect = [...(userAnswer || [])].sort().join(',') === [...(correctAnswer || [])].sort().join(',');
+                    } else {
+                      isCorrect = userAnswer === correctAnswer;
+                    }
+
+                    const getAnswerLabel = (val) => {
+                      if (val === undefined || val === null) return 'ไม่ได้ตอบ';
+                      if (Array.isArray(val)) return val.map(idx => q.options[idx]).join(', ');
+                      if (typeof val === 'object') {
+                        return (q.matchingPairs || []).map((pair, i) => `${pair.left} → ${q.options[val[i]] || '?'}`).join(', ');
+                      }
+                      return q.options[val] || val;
+                    };
+
+                    const getCorrectLabel = () => {
+                      if (q.isMatching) {
+                        return (q.matchingPairs || []).map(p => `${p.left} → ${p.right}`).join(', ');
+                      }
+                      if (Array.isArray(correctAnswer)) return correctAnswer.map(idx => q.options[idx]).join(', ');
+                      return q.options[correctAnswer] || correctAnswer;
+                    };
+
+                    return (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                        className={`relative p-5 rounded-3xl border-2 transition-all ${isCorrect ? 'border-green-100 bg-green-50/30' : 'border-red-100 bg-red-50/30'
+                          }`}
+                      >
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className={`mt-1 p-2 rounded-2xl ${isCorrect ? 'bg-green-500 shadow-green-100' : 'bg-red-500 shadow-red-100'} shadow-lg text-white shrink-0`}>
+                            {isCorrect ? <CheckCircle size={18} /> : <XCircle size={18} />}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`text-xs font-black px-2 py-0.5 rounded-full ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                ข้อที่ {idx + 1}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  const ans = getAnswerLabel(userAnswer);
+                                  const cor = getCorrectLabel();
+                                  let text = `โจทย์คือ ${q.question} คุณตอบ ${ans}`;
+                                  if (!isCorrect) {
+                                    text += ` แต่คำตอบที่ถูกคือ ${cor}`;
+                                  } else {
+                                    text += ` ถูกต้องเก่งมากค่ะ`;
+                                  }
+                                  speakText(text);
+                                }}
+                                className="p-1 text-indigo-400 hover:text-indigo-600"
+                              >
+                                <Volume2 size={16} />
+                              </button>
+                            </div>
+                            <p className="text-sm font-bold text-gray-800 leading-snug">{q.question}</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-11">
+                          <div className="p-3 bg-white/60 rounded-2xl border border-white shadow-sm">
+                            <p className="text-[10px] text-gray-400 font-black uppercase mb-1 tracking-wider">คุณตอบ:</p>
+                            <p className={`text-sm font-bold ${isCorrect ? 'text-green-600' : 'text-red-500'}`}>{getAnswerLabel(userAnswer)}</p>
+                          </div>
+                          {!isCorrect && (
+                            <div className="p-3 bg-green-50/50 rounded-2xl border border-green-100 shadow-sm">
+                              <p className="text-[10px] text-green-400 font-black uppercase mb-1 tracking-wider">คำตอบที่ถูก:</p>
+                              <p className="text-sm font-bold text-green-600">{getCorrectLabel()}</p>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                <div className="p-5 border-t bg-gray-50/50">
+                  <button
+                    onClick={() => setShowReview(false)}
+                    className="w-full py-3 bg-white text-indigo-600 font-black rounded-2xl border-2 border-indigo-100 hover:bg-indigo-50 transition"
+                  >
+                    กลับไปหน้าคะแนน
                   </button>
                 </div>
-              </div>
-            </motion.div>
-          ) : (
-            /* Answer Summary View */
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl flex flex-col h-[85vh]"
-            >
-              {/* Summary Header */}
-              <div className="p-5 border-b flex items-center justify-between bg-indigo-50/50">
-                <button
-                  onClick={() => setShowReview(false)}
-                  className="p-2 hover:bg-white rounded-full transition-colors"
-                >
-                  <ArrowLeft size={24} className="text-indigo-600" />
-                </button>
-                <h3 className="text-xl font-black text-indigo-900">สรุปคำตอบของคุณ</h3>
-                <div className="w-10" />
-              </div>
-
-              {/* Summary List */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 pt-6">
-                {questions.map((q, idx) => {
-                  const questionId = q._id || q.id;
-                  const userAnswer = answers[questionId];
-                  const correctAnswer = q.correctAnswer;
-
-                  let isCorrect = false;
-                  if (q.isMatching) {
-                    const matchingPairs = q.matchingPairs || [];
-                    isCorrect = true;
-                    for (let i = 0; i < matchingPairs.length; i++) {
-                      if (userAnswer?.[i] !== q.options.indexOf(matchingPairs[i].right)) {
-                        isCorrect = false; break;
-                      }
-                    }
-                  } else if (q.isMultipleChoice) {
-                    isCorrect = [...(userAnswer || [])].sort().join(',') === [...(correctAnswer || [])].sort().join(',');
-                  } else {
-                    isCorrect = userAnswer === correctAnswer;
-                  }
-
-                  const getAnswerLabel = (val) => {
-                    if (val === undefined || val === null) return 'ไม่ได้ตอบ';
-                    if (Array.isArray(val)) return val.map(idx => q.options[idx]).join(', ');
-                    if (typeof val === 'object') {
-                      return (q.matchingPairs || []).map((pair, i) => `${pair.left} → ${q.options[val[i]] || '?'}`).join(', ');
-                    }
-                    return q.options[val] || val;
-                  };
-
-                  const getCorrectLabel = () => {
-                    if (q.isMatching) {
-                      return (q.matchingPairs || []).map(p => `${p.left} → ${p.right}`).join(', ');
-                    }
-                    if (Array.isArray(correctAnswer)) return correctAnswer.map(idx => q.options[idx]).join(', ');
-                    return q.options[correctAnswer] || correctAnswer;
-                  };
-
-                  return (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className={`relative p-5 rounded-3xl border-2 transition-all ${isCorrect ? 'border-green-100 bg-green-50/30' : 'border-red-100 bg-red-50/30'
-                        }`}
-                    >
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className={`mt-1 p-2 rounded-2xl ${isCorrect ? 'bg-green-500 shadow-green-100' : 'bg-red-500 shadow-red-100'} shadow-lg text-white shrink-0`}>
-                          {isCorrect ? <CheckCircle size={18} /> : <XCircle size={18} />}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                              ข้อที่ {idx + 1}
-                            </span>
-                            <button
-                              onClick={() => {
-                                const ans = getAnswerLabel(userAnswer);
-                                const cor = getCorrectLabel();
-                                let text = `โจทย์คือ ${q.question} คุณตอบ ${ans}`;
-                                if (!isCorrect) {
-                                  text += ` แต่คำตอบที่ถูกคือ ${cor}`;
-                                } else {
-                                  text += ` ถูกต้องเก่งมากค่ะ`;
-                                }
-                                speakText(text);
-                              }}
-                              className="p-1 text-indigo-400 hover:text-indigo-600"
-                            >
-                              <Volume2 size={16} />
-                            </button>
-                          </div>
-                          <p className="text-sm font-bold text-gray-800 leading-snug">{q.question}</p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-11">
-                        <div className="p-3 bg-white/60 rounded-2xl border border-white shadow-sm">
-                          <p className="text-[10px] text-gray-400 font-black uppercase mb-1 tracking-wider">คุณตอบ:</p>
-                          <p className={`text-sm font-bold ${isCorrect ? 'text-green-600' : 'text-red-500'}`}>{getAnswerLabel(userAnswer)}</p>
-                        </div>
-                        {!isCorrect && (
-                          <div className="p-3 bg-green-50/50 rounded-2xl border border-green-100 shadow-sm">
-                            <p className="text-[10px] text-green-400 font-black uppercase mb-1 tracking-wider">คำตอบที่ถูก:</p>
-                            <p className="text-sm font-bold text-green-600">{getCorrectLabel()}</p>
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              <div className="p-5 border-t bg-gray-50/50">
-                <button
-                  onClick={() => setShowReview(false)}
-                  className="w-full py-3 bg-white text-indigo-600 font-black rounded-2xl border-2 border-indigo-100 hover:bg-indigo-50 transition"
-                >
-                  กลับไปหน้าคะแนน
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      )}
-    </div>
+              </motion.div>
+            )}
+          </div>
+        )
+      }
+    </div >
   );
 };
 
-export default MockTestPage;
+export default StudentTestPage;

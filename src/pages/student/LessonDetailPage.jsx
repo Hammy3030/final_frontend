@@ -19,7 +19,9 @@ import {
   Plus,
   Trash2,
   RefreshCw,
-  Check
+  Check,
+  FileText,
+  Gamepad2
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -32,8 +34,11 @@ import { getWritingGuide } from '../../utils/writingGuide';
 import AudioButton from '../../components/AudioButton';
 import MilestonePopup from '../../components/MilestonePopup';
 import AddVocabImageModal from '../../components/teacher/AddVocabImageModal';
+import CreateGameModal from '../../components/teacher/CreateGameModal';
+import CreateTestModal from '../../components/teacher/CreateTestModal';
 
 const LessonDetailPage = () => {
+  const unlockRedirectRef = useRef(false);
   const { lessonId } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -51,127 +56,86 @@ const LessonDetailPage = () => {
   const [postTestStatus, setPostTestStatus] = useState(null);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   const [vocabWordIndex, setVocabWordIndex] = useState(0);
+  const [writingWordIndex, setWritingWordIndex] = useState(0);
   const [showMilestone, setShowMilestone] = useState(false);
   const [milestoneData, setMilestoneData] = useState({ title: '', subtitle: '', emoji: '' });
   const [showAddImageModal, setShowAddImageModal] = useState(false);
+  const [showCreateGameModal, setShowCreateGameModal] = useState(false);
+  const [showCreateTestModal, setShowCreateTestModal] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitleValue, setEditTitleValue] = useState('');
   const [editingItemIndex, setEditingItemIndex] = useState(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isFetchingLesson, setIsFetchingLesson] = useState(false);
 
   // Check unlock conditions before accessing lesson
   useEffect(() => {
     const checkUnlockConditions = async () => {
-      // Skip pre-test check for teachers
-      if (isTeacher) {
+      if (isTeacher || !lessonId) {
         setIsLoadingStatus(false);
         return;
       }
 
       try {
-        try {
-          const preTestRes = await axios.get(
-            getApiUrl(`/student/lessons/${lessonId}/pre-test-status`),
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              // Add cache busting to ensure fresh data
-              params: { _t: Date.now() }
-            }
-          );
+        const preTestRes = await axios.get(
+          getApiUrl(`/student/lessons/${lessonId}/pre-test-status`),
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { _t: Date.now() }
+          }
+        );
 
-          if (preTestRes.data?.success) {
-            const status = preTestRes.data.data;
-            setPreTestStatus(status);
+        if (preTestRes.data?.success) {
+          const status = preTestRes.data.data;
+          setPreTestStatus(status);
 
-            console.log('Pre-test status check:', {
-              hasPreTest: status.hasPreTest,
-              isPreTestCompleted: status.isPreTestCompleted,
-              canAccessLesson: status.canAccessLesson,
-              preTestId: status.preTestId
+          // 1. เช็ก Pre-test: ใส่ id เพื่อไม่ให้ Toast ซ้อน
+          if (status.hasPreTest && !status.isPreTestCompleted) {
+            setIsRedirecting(true);
+            unlockRedirectRef.current = true;
+            toast.error('ต้องทำแบบทดสอบก่อนเรียนก่อน', {
+              id: 'pre-test-error', // บังคับให้แสดงแค่อันเดียว
+              duration: 3000,
+              icon: '📝'
             });
-
-            // If pre-test is required but not completed, redirect to pre-test page
-            if (status.hasPreTest && !status.isPreTestCompleted) {
-              toast.error('ต้องทำแบบทดสอบก่อนเรียนก่อน', {
-                duration: 3000,
-                icon: '📝'
-              });
-              // Redirect to pre-test page directly
-              if (status.preTestId) {
-                navigate(`/dashboard/student/tests/${status.preTestId}`);
-              } else {
-                navigate(isTeacher ? '/dashboard/teacher' : '/dashboard/student');
-              }
-              return;
-            }
-
-            // ถ้ายังไม่ปลดล็อกบทเรียน (เช่น บทก่อนหน้ายังไม่ผ่าน) ห้ามเข้าโดยตรงด้วย URL
-            if (status.canAccessLesson === false) {
-              toast.error('บทเรียนนี้ยังไม่ปลดล็อก', {
-                duration: 3000,
-                icon: '🔒'
-              });
-              navigate('/dashboard/student/lessons');
-              return;
-            }
+            return navigate(status.preTestId ? `/dashboard/student/tests/${status.preTestId}` : '/dashboard/student');
           }
-        } catch (err) {
-          // If endpoint fails, allow access (backward compatibility)
-          console.warn('Pre-test status check failed:', err);
+
+          // 2. เช็กการปลดล็อก: ใส่ id เพื่อไม่ให้ Toast ซ้อน
+          if (status.canAccessLesson === false) {
+            setIsRedirecting(true);
+            unlockRedirectRef.current = true;
+            toast.error('บทเรียนนี้ยังไม่ปลดล็อก', {
+              id: 'unlock-error', // บังคับให้แสดงแค่อันเดียว
+              duration: 3000,
+              icon: '🔒'
+            });
+            return navigate('/dashboard/student/lessons');
+          }
         }
 
-        // Check post-test status (for SummaryStep display)
-        try {
-          const postTestRes = await axios.get(
-            getApiUrl(`/student/lessons/${lessonId}/post-test-status`),
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+        // 3. เช็ก Post-test status (ถ้าผ่านเงื่อนไขบนมาได้)
+        const postTestRes = await axios.get(
+          getApiUrl(`/student/lessons/${lessonId}/post-test-status`),
+          { headers: { Authorization: `Bearer ${token}` } }
+        ).catch(() => null); // ป้องกัน Error จากตัวนี้ไปทำให้ Toast เด้ง
 
-          if (postTestRes.data?.success) {
-            setPostTestStatus(postTestRes.data.data);
-          }
-        } catch (err) {
-          // If endpoint fails, continue (backward compatibility)
-          console.warn('Post-test status check failed:', err);
+        if (postTestRes?.data?.success) {
+          setPostTestStatus(postTestRes.data.data);
         }
+
       } catch (err) {
-        console.error('Check unlock conditions error:', err);
+        console.warn('Check unlock conditions failed:', err);
       } finally {
-        setIsLoadingStatus(false);
+        if (!unlockRedirectRef.current) {
+          setIsLoadingStatus(false);
+        }
       }
     };
 
-    if (lessonId) {
-      checkUnlockConditions();
-    }
+    checkUnlockConditions();
   }, [lessonId, navigate, isTeacher, token]);
 
-  useEffect(() => {
-    const fetchLesson = async () => {
-      if (isLoadingStatus) return;
-
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get(getApiUrl(`/lessons/${lessonId}`), {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (res.data?.success) {
-          setLesson(res.data.data.lesson);
-          setEditTitleValue(res.data.data.lesson?.title || '');
-        }
-      } catch (err) {
-        console.error('Fetch lesson failed:', err?.response?.data || err?.message);
-        toast.error('เกิดข้อผิดพลาดในการโหลดบทเรียน');
-        if (isTeacher && classroomId) {
-          navigate(`/dashboard/teacher/classrooms/${classroomId}`);
-        } else {
-          navigate(isTeacher ? '/dashboard/teacher' : '/dashboard/student');
-        }
-      }
-    };
-
-    fetchLesson();
-  }, [lessonId, navigate, isLoadingStatus]);
 
   useEffect(() => {
     // Timer for tracking time spent
@@ -182,7 +146,53 @@ const LessonDetailPage = () => {
     return () => clearInterval(timer);
   }, []);
 
-  if (isLoadingStatus || !lesson) {
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchLessonDetail() {
+      if (!lessonId || isLoadingStatus || !token || unlockRedirectRef.current || isRedirecting) return;
+
+      try {
+        setIsFetchingLesson(true);
+        const res = await axios.get(getApiUrl(`/lessons/${lessonId}`), {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (cancelled) return;
+
+        const raw = res.data?.data?.lesson;
+        if (!raw || !res.data?.success) {
+          toast.error('ไม่พบข้อมูลบทเรียน', { icon: '📭' });
+          navigate(isTeacher ? '/dashboard/teacher' : '/dashboard/student/lessons');
+          return;
+        }
+
+        setLesson({
+          ...raw,
+          id: raw.id || raw._id
+        });
+      } catch (err) {
+        if (cancelled) return;
+        console.error('Lesson load error:', err);
+        toast.error('โหลดบทเรียนไม่สำเร็จ ตรวจสอบว่ารันหลังบ้านแล้ว (เช่น พอร์ต 3000)', {
+          duration: 5000
+        });
+        navigate(isTeacher ? '/dashboard/teacher' : '/dashboard/student/lessons');
+      } finally {
+        if (!cancelled) {
+          setIsFetchingLesson(false);
+        }
+      }
+    }
+
+    fetchLessonDetail();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lessonId, token, isLoadingStatus, isTeacher, navigate]);
+
+  if (isLoadingStatus || isFetchingLesson || !lesson) {
     return (
       <div className="flex items-center justify-center h-dvh bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
@@ -249,7 +259,7 @@ const LessonDetailPage = () => {
 
               const itemsToReturn = vocabOnly.length > 0 ? vocabOnly : mediaData.items;
 
-              return itemsToReturn.map(item => ({
+              const result = itemsToReturn.map(item => ({
                 word: item.word,
                 emoji: null, // Image preferred
                 // Use vocabImage if available (Chicken), otherwise Consonant Image (Ko Kai)
@@ -257,6 +267,8 @@ const LessonDetailPage = () => {
                 meaning: item.label || item.word,
                 audio: null // Will trigger TTS fallback
               }));
+
+              return result; // [Requirement 4] RETURN EARLY to prevent mixing with fallback
             }
           }
         } catch (e) {
@@ -524,22 +536,28 @@ const LessonDetailPage = () => {
         }
       }
 
-      // 3. Extract from vocabulary words (only if within range)
+      // 3. Extract from vocabulary words
       // These are the consonants that appear in vocabulary words of this lesson
-      if (vocabularyWords.length > 0 && rangeStart && rangeEnd) {
-        const startCode = rangeStart.charCodeAt(0);
-        const endCode = rangeEnd.charCodeAt(0);
-
+      if (vocabularyWords.length > 0) {
         vocabularyWords.forEach(item => {
           const word = typeof item === 'object' ? item.word : item;
-          // Extract first character if it's a consonant (e.g., "กา" -> "ก")
+          // [Requirement 1 Fix] Extract base consonant even if word starts with a vowel (e.g., "ไก่" -> "ก")
           if (word && word.length > 0) {
-            const firstChar = word.charAt(0);
-            if (firstChar.length === 1 && /[ก-ฮ]/.test(firstChar)) {
-              const charCode = firstChar.charCodeAt(0);
-              // Only add if within range
-              if (charCode >= startCode && charCode <= endCode && !consonants.includes(firstChar)) {
-                consonants.push(firstChar);
+            // Find the first character that is a Thai consonant [ก-ฮ]
+            const consonantMatch = word.match(/[ก-ฮ]/);
+            if (consonantMatch) {
+              const baseChar = consonantMatch[0];
+              // If we have a range, only add if it's within the range
+              if (rangeStart && rangeEnd) {
+                const charCode = baseChar.charCodeAt(0);
+                const startCode = rangeStart.charCodeAt(0);
+                const endCode = rangeEnd.charCodeAt(0);
+                if (charCode >= startCode && charCode <= endCode && !consonants.includes(baseChar)) {
+                  consonants.push(baseChar);
+                }
+              } else if (!consonants.includes(baseChar)) {
+                // For custom lessons without range, add all found consonants
+                consonants.push(baseChar);
               }
             }
           }
@@ -601,12 +619,12 @@ const LessonDetailPage = () => {
     if (!completedSteps.includes(stepId)) {
       setCompletedSteps([...completedSteps, stepId]);
       if (isTeacher) {
-        toast.success('คุณครูทำส่วนนี้เสร็จแล้ว', { icon: '👍' });
+        toast.success('คุณครูทำส่วนนี้เสร็จแล้ว');
       } else {
         // Show big milestone popup instead of small toast for students
         setMilestoneData({
-          title: 'เก่งที่สุดเลย! 🎉',
-          subtitle: 'เรียนจบหัวข้อนี้แล้ว ไปต่อกันเถอะ',
+          title: 'เก่งมาก',
+          subtitle: 'เรียนหัวข้อต่อไปกันเถอะ',
           emoji: '🌟'
         });
         setShowMilestone(true);
@@ -625,9 +643,19 @@ const LessonDetailPage = () => {
       }
     }
 
+    // [Requirement 2] ถ้าอยู่ขั้นฝึกเขียน ให้ปุ่มถัดไปเลื่อนพยัญชนะให้ครบทุกตัวก่อน
+    if (currentStepData?.type === 'activity-writing') {
+      const totalWritingWords = currentStepData?.content?.words?.length || 0;
+      if (totalWritingWords > 0 && writingWordIndex < totalWritingWords - 1) {
+        setWritingWordIndex(writingWordIndex + 1);
+        return;
+      }
+    }
+
     if (currentStep < lessonSteps.length - 1) {
       handleStepComplete(lessonSteps[currentStep].id);
       setVocabWordIndex(0);
+      setWritingWordIndex(0);
       setCurrentStep(currentStep + 1);
     } else {
       handleLessonComplete();
@@ -773,23 +801,33 @@ const LessonDetailPage = () => {
     }
   };
 
+  const generateTests = () => {
+    setShowCreateTestModal(true);
+  };
+
+  const generateGames = () => {
+    setShowCreateGameModal(true);
+  };
+
   const handlePrevStep = () => {
     const currentStepData = lessonSteps[currentStep];
     // ✅ ปรับปรุง: ถ้าอยู่หน้าคำศัพท์หรือฝึกเขียน ให้ปุ่มก่อนหน้าถอยย่อยก่อน
-    if ((currentStepData?.type === 'vocabulary' || currentStepData?.type === 'activity-writing') && vocabWordIndex > 0) {
-      setVocabWordIndex(vocabWordIndex - 1);
+    if ((currentStepData?.type === 'vocabulary' || currentStepData?.type === 'activity-writing') && (vocabWordIndex > 0 || writingWordIndex > 0)) {
+      if (currentStepData?.type === 'vocabulary') setVocabWordIndex(vocabWordIndex - 1);
+      else setWritingWordIndex(writingWordIndex - 1);
       return;
     }
 
     if (currentStep > 0) {
       setVocabWordIndex(0);
+      setWritingWordIndex(0);
       setCurrentStep(currentStep - 1);
     }
   };
 
   const handleLessonComplete = async () => {
     if (isTeacher) {
-      toast('พรีวิวบทเรียนเสร็จสิ้น (สิ้นสุดเนื้อหาแล้ว)', { icon: '👀' });
+      toast('สิ้นสุดเนื้อหาแล้ว');
       return;
     }
 
@@ -805,7 +843,7 @@ const LessonDetailPage = () => {
       setShowConfetti(true);
       setMilestoneData({
         title: 'ยินดีด้วย เรียนจบแล้ว 🎉',
-        subtitle: 'คุณเก่งมากที่เรียนจนจบกหัวข้อนี้ พัฒนาต่อไปนะ',
+        subtitle: 'เก่งมาก',
         emoji: '🏆'
       });
       setShowMilestone(true);
@@ -946,9 +984,14 @@ const LessonDetailPage = () => {
           />
         );
       case 'activity-writing':
-        return <WritingActivityStep step={step} onComplete={(activityId, writtenText, isCorrect, score) => {
-          handleActivityAnswer(activityId, { writtenText, isCorrect, score }, isCorrect, score);
-        }} />;
+        return <WritingActivityStep
+          step={step}
+          currentWordIndex={writingWordIndex}
+          setCurrentWordIndex={setWritingWordIndex}
+          onComplete={(activityId, writtenText, isCorrect, score) => {
+            handleActivityAnswer(activityId, { writtenText, isCorrect, score }, isCorrect, score);
+          }}
+        />;
       case 'summary':
         return (
           <SummaryStep
@@ -1085,17 +1128,33 @@ const LessonDetailPage = () => {
 
           {/* Teacher Floating Action Buttons */}
           {isTeacher && (
-            <div className="absolute bottom-6 right-6 sm:bottom-10 sm:right-10 z-40">
+            <div className="absolute bottom-6 right-6 sm:bottom-10 sm:right-10 z-40 flex flex-col gap-3">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={generateTests}
+                className="px-5 py-3.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-black rounded-full shadow-2xl flex items-center gap-2"
+              >
+                <FileText size={18} />
+                <span className="hidden sm:inline text-[15px]">สร้างข้อสอบ</span>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={generateGames}
+                className="px-5 py-3.5 bg-gradient-to-r from-orange-500 to-red-500 text-white font-black rounded-full shadow-2xl flex items-center gap-2"
+              >
+                <Gamepad2 size={18} />
+                <span className="hidden sm:inline text-[15px]">สร้างเกม</span>
+              </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowAddImageModal(true)}
-                className="px-5 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black rounded-full shadow-2xl shadow-emerald-500/40 border border-emerald-400/50 flex items-center gap-2 group"
+                className="px-5 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black rounded-full shadow-2xl flex items-center gap-2"
               >
-                <div className="bg-white/20 rounded-full p-1 group-hover:rotate-90 transition-transform">
-                  <Plus size={18} fill="currentColor" />
-                </div>
-                <span className="hidden sm:inline text-[15px]">เพิ่มรูปภาพเข้าสู่บทเรียน</span>
+                <Plus size={18} />
+                <span className="hidden sm:inline text-[15px]">เพิ่มรูปภาพ</span>
               </motion.button>
             </div>
           )}
@@ -1111,7 +1170,7 @@ const LessonDetailPage = () => {
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-2">
           <button
             onClick={() => {
-              if (currentStep > 0) handlePrevStep();
+              if (currentStep > 0 || (currentStep === 0 && (vocabWordIndex > 0 || writingWordIndex > 0))) handlePrevStep();
               else {
                 if (isTeacher && classroomId) navigate(`/dashboard/teacher/classrooms/${classroomId}`);
                 else navigate(isTeacher ? '/dashboard/teacher' : '/dashboard/student');
@@ -1120,7 +1179,7 @@ const LessonDetailPage = () => {
             className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-lg font-medium transition bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm shrink-0"
           >
             <ChevronLeft size={18} />
-            <span className="hidden sm:inline">{currentStep === 0 ? 'กลับ' : 'ก่อนหน้า'}</span>
+            <span className="hidden sm:inline">{currentStep === 0 && vocabWordIndex === 0 && writingWordIndex === 0 ? 'กลับ' : 'ก่อนหน้า'}</span>
           </button>
 
           <button
@@ -1191,6 +1250,24 @@ const LessonDetailPage = () => {
               })()
               : null
           }
+        />
+      )}
+
+      {showCreateGameModal && (
+        <CreateGameModal
+          isOpen={showCreateGameModal}
+          onClose={() => setShowCreateGameModal(false)}
+          lessonId={lessonId}
+          lessonTitle={lesson?.title}
+        />
+      )}
+
+      {showCreateTestModal && (
+        <CreateTestModal
+          isOpen={showCreateTestModal}
+          onClose={() => setShowCreateTestModal(false)}
+          lessonId={lessonId}
+          lessonTitle={lesson?.title}
         />
       )}
     </div>
@@ -1492,7 +1569,22 @@ const VocabularyStep = ({ step, playAudio, currentWordIndex, setCurrentWordIndex
         </div>
       </motion.div>
 
-      {/* Navigation row removed per request: use only bottom previous/next controls */}
+      {/* [Requirement 4] Slide Indicators (Dots) */}
+      {words.length > 1 && (
+        <div className="flex items-center justify-center gap-1.5 pb-2">
+          {words.map((_, idx) => (
+            <motion.div
+              key={idx}
+              initial={false}
+              animate={{
+                width: idx === currentWordIndex ? 24 : 8,
+                backgroundColor: idx === currentWordIndex ? '#3b82f6' : '#d1d5db'
+              }}
+              className="h-2 rounded-full transition-all duration-300"
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -1702,9 +1794,8 @@ const MatchingActivity = ({ step, onAnswer, currentAnswer }) => {
 };
 
 // Writing Activity Step Component — responsive, raw canvas, no HandwritingCanvas wrapper
-const WritingActivityStep = ({ step, onComplete }) => {
+const WritingActivityStep = ({ step, onComplete, currentWordIndex, setCurrentWordIndex }) => {
   const words = step.content.words || (step.content.word ? [step.content.word] : ['ก']);
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [completedWords, setCompletedWords] = useState(new Set());
   const wordToWrite = words[currentWordIndex];
   const [isChecking, setIsChecking] = useState(false);
@@ -1898,7 +1989,24 @@ const WritingActivityStep = ({ step, onComplete }) => {
               <span className="text-5xl font-black text-indigo-600">{wordToWrite}</span>
             </div>
             <div className="space-y-0.5">
-              <h3 className="text-xl font-black text-gray-800">ฝึกลากเส้นประ</h3>
+
+              {/* [Requirement 5] Writing Slide Indicators */}
+              {words.length > 1 && (
+                <div className="flex items-center justify-center gap-1.5 pb-2">
+                  {words.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentWordIndex ? 'w-6 bg-indigo-600' : 'w-1.5 bg-indigo-200'
+                        }`}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between gap-4">
+                <h3 className="text-xl font-black text-gray-800">ฝึกลากเส้นประ</h3>
+                <span className="text-[10px] font-bold text-indigo-500 bg-indigo-100 px-2 py-0.5 rounded-full">{currentWordIndex + 1} / {words.length}</span>
+              </div>
               <p className="text-sm font-medium text-indigo-500">{step.content.question || 'ลากนิ้วตามตัวอักษรให้ถูกต้อง'}</p>
             </div>
           </div>
@@ -1962,25 +2070,7 @@ const WritingActivityStep = ({ step, onComplete }) => {
       {/* Footer: AI Result & Progress & Action Buttons */}
       <div className="shrink-0 flex flex-col gap-3 pt-2 border-t border-gray-100">
         {/* AI result pill */}
-        <AnimatePresence>
-          {detectedText && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className={`flex items-center gap-3 px-5 py-3 rounded-2xl text-base shadow-sm ${isCorrect
-                ? 'bg-green-100 border-2 border-green-300 text-green-900'
-                : 'bg-red-100 border-2 border-red-300 text-red-900'
-                }`}
-            >
-              <span className="text-2xl">{isCorrect ? '✅' : '❌'}</span>
-              <div className="flex-1">
-                <p className="font-black leading-tight">{isCorrect ? 'เก่งมาก ตรวจสอบแล้วถูกต้อง' : 'อ๊ะ ลองใหม่อีกครั้งนะตัวเล็ก'}</p>
-                <p className="text-xs opacity-70 italic font-medium">AI อ่านได้ว่า: <b className="text-indigo-600">{detectedText}</b></p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
         {/* Action buttons */}
         <div className="flex flex-col gap-3">
@@ -2037,14 +2127,16 @@ const SummaryStep = ({ step, postTestStatus, postTestId, onGoToPostTest }) => {
         className="bg-white rounded-3xl shadow-2xl border border-gray-200 w-full max-w-md px-8 py-10 text-center"
       >
         <div className="text-7xl mb-4">🏆</div>
-        <h2 className="text-4xl font-black text-emerald-600 mb-8">เก่งที่สุดเลย</h2>
+        <h2 className="text-4xl font-black text-blue-600 mb-8">
+          เรียนจบแล้ว
+        </h2>
         <button
           type="button"
-          onClick={readAloud('เก่งที่สุดเลย')}
+          onClick={readAloud('เก่งมาก เรียนจบแล้ว กดปุ่มสีเขียวเพื่อทำแบบทดสอบหลังเรียนเลย')}
           className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3.5 rounded-2xl font-bold transition"
         >
           <Volume2 size={22} />
-          ฟังคำชม
+
         </button>
       </motion.div>
     </div>

@@ -34,23 +34,31 @@ const AddStudentToClassModal = ({ isOpen, onClose, onSuccess, classroomId }) => 
                 throw new Error('กรุณาระบุรายชื่อนักเรียนอย่างน้อย 1 คน');
             }
 
-            // Check for duplicate names
+            // Check prefixes and duplicates
+            const prefixRegex = /^(ด\.?ช\.?|ด\.?ญ\.?|เด็กชาย|เด็กหญิง)\s*/i;
             const nameSet = new Set();
-            const duplicates = [];
 
-            studentNames.forEach(name => {
-                const lowerName = name.toLowerCase();
-                if (nameSet.has(lowerName)) {
-                    if (!duplicates.includes(name)) {
-                        duplicates.push(name);
-                    }
-                } else {
-                    nameSet.add(lowerName);
+            for (const name of studentNames) {
+                if (!prefixRegex.test(name)) {
+                    throw new Error('กรุณาเลือกตัวย่อคำนำหน้าชื่อ');
                 }
-            });
 
-            if (duplicates.length > 0) {
-                throw new Error(`มีชื่อซ้ำกัน: ${duplicates.join(', ')}`);
+                // Robust strip function matching backend: removes dots and ALL spaces
+                const nameWithoutPrefix = name.trim()
+                    .replace(prefixRegex, '')
+                    .replace(/[\s\.]/g, '')
+                    .toLowerCase();
+
+                const nameParts = name.trim().replace(prefixRegex, '').trim().split(/\s+/).filter(p => p.length > 0);
+                
+                if (nameParts.length < 2) {
+                    throw new Error('กรุณากรอกชื่อและนามสกุล');
+                }
+
+                if (nameSet.has(nameWithoutPrefix)) {
+                    throw new Error('พบชื่อ-นามสกุลซ้ำในรายการที่กำลังจะเพิ่ม กรุณาตรวจสอบอีกครั้ง');
+                }
+                nameSet.add(nameWithoutPrefix);
             }
 
             const studentsData = studentNames.map(name => ({ name }));

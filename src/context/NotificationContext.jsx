@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { getApiUrl } from '../utils/apiConfig';
@@ -14,92 +14,131 @@ export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
+    const isMountedRef = useRef(true);
+    const pollIntervalRef = useRef(null);
 
-    const fetchNotifications = async () => {
-        if (!user || !token) return;
+    const getAuthHeaders = useCallback(() => ({
+        Authorization: `Bearer ${token}`
+    }), [token]);
+
+    const fetchNotifications = useCallback(async () => {
+        if (!user || !token || user.role !== 'STUDENT') return;
 
         try {
-            // In a real app, this would be an API call
-            // For now, we'll use mock data or a placeholder endpoint if available
-            // const res = await axios.get(getApiUrl('/notifications'), {
-            //   headers: { Authorization: `Bearer ${token}` }
-            // });
-            // setNotifications(res.data.data);
-            // setUnreadCount(res.data.data.filter(n => !n.isRead).length);
+            setLoading(true);
+            const res = await axios.get(getApiUrl('/student/notifications'), {
+                headers: getAuthHeaders()
+            });
 
-            // Mock data for demonstration
-            const mockNotifications = [
-                {
-                    id: 1,
-                    title: 'ยินดีต้อนรับ',
-                    message: 'ยินดีต้อนรับสู่ BearThai ขอให้สนุกกับการเรียนรู้นะครับ',
-                    isRead: false,
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    id: 2,
-                    title: 'บทเรียนใหม่',
-                    message: 'บทเรียน "สระ อา" พร้อมให้เรียนแล้ว',
-                    isRead: true,
-                    createdAt: new Date(Date.now() - 86400000).toISOString()
-                }
-            ];
+            const nextNotifications = res.data?.data?.notifications || [];
 
-            // Only set if empty to avoid overwriting state in this mock version
-            if (notifications.length === 0) {
-                setNotifications(mockNotifications);
-                setUnreadCount(mockNotifications.filter(n => !n.isRead).length);
+            if (isMountedRef.current) {
+                setNotifications(nextNotifications);
+                setUnreadCount(nextNotifications.filter((n) => !n.isRead).length);
             }
-
         } catch (error) {
             console.error('Failed to fetch notifications:', error);
+        } finally {
+            if (isMountedRef.current) {
+                setLoading(false);
+            }
         }
-    };
+    }, [user, token, getAuthHeaders]);
 
     const markAsRead = async (notificationId) => {
+        if (!token) return;
+
+        const previousNotifications = notifications;
+        const wasUnread = notifications.some((n) => n.id === notificationId && !n.isRead);
+
         // Optimistic update
         setNotifications(prev =>
             prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
         );
-        setUnreadCount(prev => Math.max(0, prev - 1));
+        if (wasUnread) {
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        }
 
         try {
-            // API call would go here
-            // await axios.put(getApiUrl(`/notifications/${notificationId}/read`), {}, {
-            //   headers: { Authorization: `Bearer ${token}` }
-            // });
+            await axios.put(getApiUrl(`/student/notifications/${notificationId}/read`), {}, {
+                headers: getAuthHeaders()
+            });
         } catch (error) {
             console.error('Failed to mark notification as read:', error);
+            // Rollback + re-sync from server for consistency
+            if (isMountedRef.current) {
+                setNotifications(previousNotifications);
+                setUnreadCount(previousNotifications.filter((n) => !n.isRead).length);
+            }
+            await fetchNotifications();
         }
     };
 
     const markAllAsRead = async () => {
+        if (!token) return;
+
+        const previousNotifications = notifications;
+        const unreadNotifications = notifications.filter((n) => !n.isRead);
+
+        if (unreadNotifications.length === 0) {
+            return;
+        }
+
+        // Optimistic update
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         setUnreadCount(0);
 
         try {
-            // API call would go here
+            await axios.put(getApiUrl('/student/notifications/read-all'), {}, {
+                headers: getAuthHeaders()
+            });
         } catch (error) {
             console.error('Failed to mark all as read:', error);
+            // Rollback + re-sync
+            if (isMountedRef.current) {
+                setNotifications(previousNotifications);
+                setUnreadCount(previousNotifications.filter((n) => !n.isRead).length);
+            }
+            await fetchNotifications();
         }
     };
 
     // Polling for notifications
     useEffect(() => {
-        if (user) {
+        isMountedRef.current = true;
+
+        if (user && user.role === 'STUDENT') {
             fetchNotifications();
 
-            const interval = setInterval(() => {
+            pollIntervalRef.current = setInterval(() => {
                 fetchNotifications();
             }, 30000); // Poll every 30 seconds
 
-            return () => clearInterval(interval);
+            return () => {
+                if (pollIntervalRef.current) {
+                    clearInterval(pollIntervalRef.current);
+                    pollIntervalRef.current = null;
+                }
+            };
         }
-    }, [user, token]);
+
+        setNotifications([]);
+        setUnreadCount(0);
+    }, [user, token, fetchNotifications]);
+
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+            }
+        };
+    }, []);
 
     const value = {
         notifications,
         unreadCount,
+        loading,
         markAsRead,
         markAllAsRead,
         fetchNotifications

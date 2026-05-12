@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, BookOpen, Upload, Image as ImageIcon } from 'lucide-react';
 
-const QuickCreateLessonModal = ({ onClose, onSubmit, isLoading = false }) => {
-  const [title, setTitle] = useState('');
+const QuickCreateLessonModal = ({ onClose, onSubmit, isLoading = false, initialTitle = '' }) => {
+  const [title, setTitle] = useState(initialTitle);
   const [imagePreview, setImagePreview] = useState(null);
 
   const handleImageChange = (e) => {

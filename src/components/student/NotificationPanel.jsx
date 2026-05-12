@@ -43,6 +43,11 @@ const NotificationPanel = ({
                 )}
               </div>
               <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
+              {notif.eventType === 'TEACHER_ANNOUNCEMENT' && notif.teacherName && (
+                <p className="text-xs text-indigo-600 mt-1 font-medium">
+                  ประกาศจากครู {notif.teacherName}
+                </p>
+              )}
               <span className="text-xs text-gray-400 mt-2 block">
                 {new Date(notif.createdAt).toLocaleDateString('th-TH', {
                   year: 'numeric',

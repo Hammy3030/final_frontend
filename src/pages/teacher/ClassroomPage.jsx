@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
@@ -49,13 +49,16 @@ import {
   Award,
   CheckCircle,
   Clock,
-  Plus
+  Plus,
+  SlidersHorizontal,
+  ArrowUpDown
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import AddStudentToClassModal from '../../components/teacher/AddStudentToClassModal';
 import CreateLessonModal from '../../components/teacher/CreateLessonModal';
 import QuickCreateLessonModal from '../../components/teacher/QuickCreateLessonModal';
+import PdfImportPreviewModal from '../../components/teacher/PdfImportPreviewModal';
 import { getApiUrl } from '../../utils/apiConfig';
 import { useLocation } from 'react-router-dom';
 
@@ -67,6 +70,9 @@ const ClassroomPage = () => {
   const [showEditLessonModal, setShowEditLessonModal] = useState(false);
   const [showCreateLessonModal, setShowCreateLessonModal] = useState(false);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const [showPdfPreviewModal, setShowPdfPreviewModal] = useState(false);
+  const [pdfPreviewData, setPdfPreviewData] = useState([]);
+  const [isConfirmingPdf, setIsConfirmingPdf] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [editingLesson, setEditingLesson] = useState(false);
   const [copiedCode, setCopiedCode] = useState(null);
@@ -81,16 +87,57 @@ const ClassroomPage = () => {
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [isLoadingProgress, setIsLoadingProgress] = useState(false);
 
-  // Search and Filter states
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterGender, setFilterGender] = useState('all'); // 'all', 'male', 'female'
-  const [filterProgress, setFilterProgress] = useState('');
-  const [sortBy, setSortBy] = useState('name'); // 'name' , 'progress' , 'createdAt'
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
+  // Student filters
+  const [studentSearch, setStudentSearch] = useState('');
+  const [debouncedStudentSearch, setDebouncedStudentSearch] = useState('');
+  const [studentGender, setStudentGender] = useState('all');
+  const [studentProgressFilter, setStudentProgressFilter] = useState('all');
+  const [studentTestStatus, setStudentTestStatus] = useState('all');
+  const [studentScoreLevel, setStudentScoreLevel] = useState('all');
+  const [studentGameStatus, setStudentGameStatus] = useState('all');
+  const [studentSort, setStudentSort] = useState('name-asc');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Test filters
+  const [testSearch, setTestSearch] = useState('');
+  const [testType, setTestType] = useState('all');
+  const [testStatus, setTestStatus] = useState('all');
+  const [testSort, setTestSort] = useState('newest');
+
+  // Game filters
+  const [gameSearch, setGameSearch] = useState('');
+  const [gameType, setGameType] = useState('all');
+  const [gameStatus, setGameStatus] = useState('all');
+  const [gameSort, setGameSort] = useState('newest');
+
+  // Debounced search terms
+  const [debouncedTestSearch, setDebouncedTestSearch] = useState('');
+  const [debouncedGameSearch, setDebouncedGameSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedTestSearch(testSearch);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [testSearch]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedGameSearch(gameSearch);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [gameSearch]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedStudentSearch(studentSearch);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [studentSearch]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -136,6 +183,137 @@ const ClassroomPage = () => {
       refetchOnWindowFocus: false
     }
   );
+
+  // Fetch classroom students with filters
+  const { data: studentsResult, isLoading: isLoadingStudents } = useQuery(
+    ['classroom-students', classroomId, debouncedStudentSearch, studentGender, studentProgressFilter, studentTestStatus, studentScoreLevel, studentGameStatus, studentSort],
+    async () => {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        getApiUrl(`/teacher/classrooms/${classroomId}/students`),
+        {
+          params: {
+            search: debouncedStudentSearch,
+            gender: studentGender,
+            progress: studentProgressFilter,
+            testStatus: studentTestStatus,
+            scoreLevel: studentScoreLevel,
+            gameStatus: studentGameStatus,
+            sort: studentSort
+          },
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      return response.data.data;
+    },
+    { enabled: !!classroomId }
+  );
+
+  // Fetch classroom tests
+  const { data: testsData, isLoading: isLoadingTests } = useQuery(
+    ['classroom-tests', classroomId, debouncedTestSearch, testType, testStatus, testSort],
+    async () => {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        getApiUrl(`/teacher/classrooms/${classroomId}/tests`),
+        {
+          params: { search: debouncedTestSearch, type: testType, status: testStatus, sort: testSort },
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      return response.data.data.tests;
+    },
+    { enabled: !!classroomId }
+  );
+
+  // Fetch classroom games
+  const { data: gamesData, isLoading: isLoadingGames } = useQuery(
+    ['classroom-games', classroomId, debouncedGameSearch, gameType, gameStatus, gameSort],
+    async () => {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        getApiUrl(`/teacher/classrooms/${classroomId}/games`),
+        {
+          params: { search: debouncedGameSearch, type: gameType, status: gameStatus, sort: gameSort },
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      return response.data.data.games;
+    },
+    { enabled: !!classroomId }
+  );
+
+  const fileInputRef = useRef(null);
+
+  // Import PDF mutation
+  const importPdfMutation = useMutation(
+    async (file) => {
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(
+        getApiUrl(`/teacher/classrooms/${classroomId}/students/import-pdf`),
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        if (data.data?.preview) {
+          setPdfPreviewData(data.data.preview);
+          setShowPdfPreviewModal(true);
+        } else {
+          toast.success(data.message || 'วิเคราะห์ไฟล์ PDF สำเร็จ');
+        }
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      },
+      onError: (error) => {
+        toast.error(error.response?.data?.message || 'เกิดข้อผิดพลาดในการนำเข้า PDF');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    }
+  );
+
+  const handlePdfConfirm = async (validStudents) => {
+    try {
+      setIsConfirmingPdf(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        getApiUrl(`/teacher/classrooms/${classroomId}/students`),
+        { students: validStudents },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        toast.success(`นำเข้านักเรียน ${validStudents.length} คนสำเร็จ`);
+        setShowPdfPreviewModal(false);
+        queryClient.invalidateQueries(['classroom', classroomId]);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+    } finally {
+      setIsConfirmingPdf(false);
+    }
+  };
+
+  const handlePdfUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      toast.error('กรุณาอัปโหลดไฟล์ PDF เท่านั้น');
+      return;
+    }
+    toast.loading('กำลังประมวลผล PDF ผ่าน AI...');
+    importPdfMutation.mutate(file, {
+      onSettled: () => toast.dismiss()
+    });
+  };
 
   // Add students mutation
   const addStudentsMutation = useMutation(
@@ -678,6 +856,10 @@ const ClassroomPage = () => {
   };
 
   const handleViewStudentProgress = async (studentId) => {
+    if (!studentId || studentId === 'undefined') {
+      console.warn('Cannot fetch progress: studentId is undefined');
+      return;
+    }
     try {
       setIsLoadingProgress(true);
       const token = localStorage.getItem('token');
@@ -716,75 +898,7 @@ const ClassroomPage = () => {
 
   // Filter and search students
   const filteredAndSortedStudents = () => {
-    if (!classroomData?.students) return [];
-
-    let filtered = [...classroomData.students];
-
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(student =>
-        student.name?.toLowerCase().includes(query) ||
-        student.studentCode?.toLowerCase().includes(query) ||
-        student.qrCode?.toLowerCase().includes(query)
-      );
-    }
-
-    // Gender filter
-    if (filterGender !== 'all') {
-      filtered = filtered.filter(student => {
-        const name = student.name?.toLowerCase() || '';
-        if (filterGender === 'male') {
-          return name.startsWith('เด็กชาย') || name.startsWith('ด.ช.');
-        } else if (filterGender === 'female') {
-          return name.startsWith('เด็กหญิง') || name.startsWith('ด.ญ.');
-        }
-        return true;
-      });
-    }
-
-    // Progress filter
-    if (filterProgress) {
-      filtered = filtered.filter(student => {
-        const completionRate = student.progressSummary?.completionRate || 0;
-        const completedLessons = student.progressSummary?.completedLessons || 0;
-        if (filterProgress === 'no-progress') return completedLessons === 0;
-        if (filterProgress === 'in-progress') return completedLessons > 0 && completionRate < 100;
-        if (filterProgress === 'completed') return completionRate === 100;
-        return true;
-      });
-    }
-
-    // Sort
-    filtered.sort((a, b) => {
-      let aValue, bValue;
-
-      switch (sortBy) {
-        case 'name':
-          aValue = a.name?.toLowerCase() || '';
-          bValue = b.name?.toLowerCase() || '';
-          break;
-        case 'progress':
-          aValue = a.progressSummary?.completionRate || 0;
-          bValue = b.progressSummary?.completionRate || 0;
-          break;
-        case 'createdAt':
-          aValue = new Date(a.createdAt || 0).getTime();
-          bValue = new Date(b.createdAt || 0).getTime();
-          break;
-        default:
-          aValue = a.name?.toLowerCase() || '';
-          bValue = b.name?.toLowerCase() || '';
-      }
-
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-      } else {
-        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
-      }
-    });
-
-    return filtered;
+    return studentsResult?.students || [];
   };
 
   // Pagination
@@ -803,11 +917,13 @@ const ClassroomPage = () => {
   };
 
   const clearFilters = () => {
-    setSearchQuery('');
-    setFilterGender('all');
-    setFilterProgress('');
-    setSortBy('name');
-    setSortOrder('asc');
+    setStudentSearch('');
+    setStudentGender('all');
+    setStudentProgressFilter('all');
+    setStudentTestStatus('all');
+    setStudentScoreLevel('all');
+    setStudentGameStatus('all');
+    setStudentSort('name-asc');
     setCurrentPage(1);
   };
 
@@ -949,6 +1065,22 @@ const ClassroomPage = () => {
     );
   }
 
+  // ฟังก์ชันดึงนักเรียนคนแรกที่ถูกเพิ่มเข้ามา
+  const getFirstAddedStudent = () => {
+    if (!classroomData?.students || classroomData.students.length === 0) return null;
+
+    // สำเนา array แล้วเรียงตามวันที่สร้าง (createdAt) จากเก่าไปใหม่ (น้อยไปมาก)
+    const sorted = [...classroomData.students].sort((a, b) => {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+
+    return sorted[0]; // คนแรกสุด
+  };
+
+  const firstStudent = getFirstAddedStudent();
+
+
+
   return (
     <div className="min-h-screen bg-gray-50 overflow-y-auto">
       {/* Header */}
@@ -1054,6 +1186,9 @@ const ClassroomPage = () => {
           </motion.div>
         </div>
 
+
+
+
         {/* Students Section */}
         <div className="bg-white rounded-xl shadow-sm border mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -1061,108 +1196,126 @@ const ClassroomPage = () => {
               <h3 className="text-lg font-semibold text-gray-900">
                 รายชื่อนักเรียน ({filteredAndSortedStudents().length} / {classroomData?.students?.length || 0})
               </h3>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowAddStudentsModal(true)}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition duration-200"
-              >
-                <UserPlus className="w-4 h-4 mr-2" />
-                สร้างบัญชีนักเรียน
-              </motion.button>
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handlePdfUpload}
+                  accept="application/pdf"
+                  className="hidden"
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={importPdfMutation.isLoading}
+                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition duration-200 disabled:opacity-50"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  {importPdfMutation.isLoading ? 'กำลังนำเข้า...' : 'นำเข้าจาก PDF'}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowAddStudentsModal(true)}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition duration-200"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  สร้างบัญชี
+                </motion.button>
+              </div>
             </div>
 
             {/* Search and Filter Bar */}
-            <div className="space-y-3">
-              {/* Search */}
+            <div className="space-y-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm mb-6">
+              {/* Row 1: Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="ค้นหาด้วยชื่อหรือรหัสนักเรียน"
-                  value={searchQuery}
+                  placeholder="ค้นหาด้วยชื่อหรือรหัสนักเรียน..."
+                  value={studentSearch}
                   onChange={(e) => {
-                    setSearchQuery(e.target.value);
+                    setStudentSearch(e.target.value);
                     handleFilterChange();
                   }}
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none"
                 />
-                {searchQuery && (
+                {studentSearch && (
                   <button
                     onClick={() => {
-                      setSearchQuery('');
+                      setStudentSearch('');
                       handleFilterChange();
                     }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-200 rounded-full transition"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
 
-              {/* Filters */}
-              <div className="flex flex-wrap gap-3">
-                {/* Gender Filter */}
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-gray-500" />
+              {/* Row 2: Basic Filters & Actions */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Gender */}
+                <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                  <span className="text-sm font-medium text-gray-700">เพศ:</span>
                   <select
-                    value={filterGender}
+                    value={studentGender}
                     onChange={(e) => {
-                      setFilterGender(e.target.value);
+                      setStudentGender(e.target.value);
                       handleFilterChange();
                     }}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="bg-transparent text-sm focus:outline-none cursor-pointer"
                   >
-                    <option value="all">ทุกเพศ</option>
+                    <option value="all">ทั้งหมด</option>
                     <option value="male">ชาย</option>
                     <option value="female">หญิง</option>
                   </select>
                 </div>
 
-                {/* Progress Filter */}
-                <select
-                  value={filterProgress}
-                  onChange={(e) => {
-                    setFilterProgress(e.target.value);
-                    handleFilterChange();
-                  }}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">ทุกความคืบหน้า</option>
-                  <option value="no-progress">ยังไม่เริ่มเรียน</option>
-                  <option value="in-progress">กำลังเรียน</option>
-                  <option value="completed">เรียนจบแล้ว</option>
-                </select>
+                {/* Progress */}
+                <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                  <span className="text-sm font-medium text-gray-700">บทเรียน:</span>
+                  <select
+                    value={studentProgressFilter}
+                    onChange={(e) => {
+                      setStudentProgressFilter(e.target.value);
+                      handleFilterChange();
+                    }}
+                    className="bg-transparent text-sm focus:outline-none cursor-pointer"
+                  >
+                    <option value="all">ทั้งหมด</option>
+                    <option value="no-progress">ยังไม่เริ่ม</option>
+                    <option value="in-progress">กำลังเรียน</option>
+                    <option value="completed">จบแล้ว</option>
+                  </select>
+                </div>
 
-                {/* Sort By */}
-                <select
-                  value={sortBy}
-                  onChange={(e) => {
-                    setSortBy(e.target.value);
-                    handleFilterChange();
-                  }}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="name">เรียงตามชื่อ</option>
-                  <option value="progress">เรียงตามความคืบหน้า</option>
-                  <option value="createdAt">เรียงตามวันที่สร้าง</option>
-                </select>
-
-                {/* Sort Order */}
+                {/* Advanced Filter Toggle */}
                 <button
-                  onClick={() => {
-                    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                    handleFilterChange();
-                  }}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition duration-200"
-                  title={sortOrder === 'asc' ? 'เรียงจากน้อยไปมาก' : 'เรียงจากมากไปน้อย'}
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-sm font-medium ${showAdvancedFilters
+                    ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm'
+                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
                 >
-                  {sortOrder === 'asc' ? '↑' : '↓'}
+                  <SlidersHorizontal className="w-4 h-4" />
+                  ตัวกรองขั้นสูง
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showAdvancedFilters ? 'rotate-180' : ''}`} />
                 </button>
 
+                {/* Clear Filters */}
+                {(studentSearch || studentGender !== 'all' || studentProgressFilter !== 'all' || studentTestStatus !== 'all' || studentScoreLevel !== 'all' || studentGameStatus !== 'all') && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 hover:bg-red-50 rounded transition"
+                  >
+                    ล้างค่าทั้งหมด
+                  </button>
+                )}
 
                 {/* Items Per Page */}
-                <div className="ml-auto flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-4">
                   <span className="text-sm text-gray-600">แสดง:</span>
                   <select
                     value={itemsPerPage}
@@ -1170,7 +1323,7 @@ const ClassroomPage = () => {
                       setItemsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-2 py-1 bg-white border border-gray-200 rounded text-sm focus:ring-1 focus:ring-blue-500 outline-none"
                   >
                     <option value="5">5</option>
                     <option value="10">10</option>
@@ -1178,18 +1331,110 @@ const ClassroomPage = () => {
                     <option value="50">50</option>
                   </select>
                 </div>
+
+                {/* Sort - Far Right */}
+                <div className="ml-auto flex items-center gap-2">
+                  <ArrowUpDown className="w-4 h-4 text-gray-400" />
+                  <select
+                    value={studentSort}
+                    onChange={(e) => {
+                      setStudentSort(e.target.value);
+                      handleFilterChange();
+                    }}
+                    className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer hover:border-gray-300 transition-all"
+                  >
+                    <option value="name-asc">ชื่อ (ก-ฮ)</option>
+                    <option value="name-desc">ชื่อ (ฮ-ก)</option>
+                    <option value="progress-desc">ความคืบหน้า (มาก-น้อย)</option>
+                    <option value="progress-asc">ความคืบหน้า (น้อย-มาก)</option>
+                    <option value="test-desc">คะแนนสอบเฉลี่ย (มาก-น้อย)</option>
+                    <option value="game-desc">คะแนนเกมเฉลี่ย (มาก-น้อย)</option>
+                  </select>
+                </div>
               </div>
+
+              {/* Row 3: Advanced Filters (Toggleable) */}
+              <AnimatePresence>
+                {showAdvancedFilters && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-4 border-t border-gray-100 flex flex-wrap gap-6">
+                      {/* Test Status */}
+                      <div className="flex flex-col gap-1.5 min-w-[160px]">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">สถานะแบบทดสอบ</label>
+                        <select
+                          value={studentTestStatus}
+                          onChange={(e) => {
+                            setStudentTestStatus(e.target.value);
+                            handleFilterChange();
+                          }}
+                          className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white transition-all"
+                        >
+                          <option value="all">ทั้งหมด</option>
+                          <option value="pre-done">ทำ Pre-test แล้ว</option>
+                          <option value="post-done">ทำ Post-test แล้ว</option>
+                          <option value="none">ยังไม่ได้ทำ</option>
+                        </select>
+                      </div>
+
+                      {/* Score Level */}
+                      <div className="flex flex-col gap-1.5 min-w-[160px]">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ระดับคะแนนเฉลี่ย</label>
+                        <select
+                          value={studentScoreLevel}
+                          onChange={(e) => {
+                            setStudentScoreLevel(e.target.value);
+                            handleFilterChange();
+                          }}
+                          className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white transition-all"
+                        >
+                          <option value="all">ทั้งหมด</option>
+                          <option value="excellent">ดีเยี่ยม (80% ขึ้นไป)</option>
+                          <option value="passed">ผ่านเกณฑ์ (50-79%)</option>
+                          <option value="care">ควรพัฒนา (ต่ำกว่า 50%)</option>
+                        </select>
+                      </div>
+
+                      {/* Game Status */}
+                      <div className="flex flex-col gap-1.5 min-w-[160px]">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">สถานะการเล่นเกม</label>
+                        <select
+                          value={studentGameStatus}
+                          onChange={(e) => {
+                            setStudentGameStatus(e.target.value);
+                            handleFilterChange();
+                          }}
+                          className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white transition-all"
+                        >
+                          <option value="all">ทั้งหมด</option>
+                          <option value="played">เคยเล่นแล้ว</option>
+                          <option value="not-played">ยังไม่เคยเล่น</option>
+                        </select>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
           <div className="p-6">
-            {classroomData?.students?.length === 0 ? (
+            {isLoadingStudents ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+                <p className="text-gray-500 text-sm animate-pulse font-medium">กำลังค้นหารายชื่อนักเรียน...</p>
+              </div>
+            ) : studentsResult?.totalCount === 0 ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Users className="w-8 h-8 text-gray-400" />
                 </div>
                 <div className="text-center py-8 text-gray-500">
-                  ยังไม่มีนักเรียน
+                  ยังไม่มีนักเรียนในห้องเรียนนี้
                 </div>
 
                 <motion.button
@@ -1199,7 +1444,7 @@ const ClassroomPage = () => {
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition duration-200"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
-                  สร้างบัญชีนักเรียน
+                  เพิ่มนักเรียน
                 </motion.button>
               </div>
             ) : filteredAndSortedStudents().length === 0 ? (
@@ -1223,7 +1468,7 @@ const ClassroomPage = () => {
                 <div className="space-y-4">
                   {paginatedStudents().map((student, index) => (
                     <motion.div
-                      key={student.id}
+                      key={student.id || student._id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
@@ -1271,18 +1516,18 @@ const ClassroomPage = () => {
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleViewStudentProgress(student.id)}
+                            onClick={() => handleViewStudentProgress(student.id || student._id)}
                             className="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition duration-200"
                             title="ดูความคืบหน้าและคะแนน"
                           >
                             <BarChart3 size={16} />
                           </button>
                           <button
-                            onClick={() => copyToClipboard(student.qrCode || student.studentCode, `code-${student.id}`)}
+                            onClick={() => copyToClipboard(student.qrCode || student.studentCode, `code-${student.id || student._id}`)}
                             className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200"
                             title="คัดลอกรหัสนักเรียน"
                           >
-                            {copiedCode === `code-${student.id}` ? (
+                            {copiedCode === `code-${student.id || student._id}` ? (
                               <Check size={16} className="text-green-600" />
                             ) : (
                               <Copy size={16} />
@@ -1369,16 +1614,6 @@ const ClassroomPage = () => {
                 บทเรียนทั้งหมด
               </h3>
               <div className="flex gap-2">
-                {/* {classroomData?.lessons && classroomData.lessons.length > 0 && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleDeleteAllLessons}
-                      className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition duration-200"
-                    >
-                    <Trash className="w-4 h-4 mr-2" /> ลบทั้งหมด
-                    </motion.button>
-                  )} */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -1393,25 +1628,7 @@ const ClassroomPage = () => {
                   )}
                   {createLessonMutation.isLoading ? 'กำลังสร้าง' : 'สร้างบทเรียนใหม่'}
                 </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => generateLessonsMutation.mutate()}
-                  disabled={generateLessonsMutation.isLoading}
-                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {generateLessonsMutation.isLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      กำลังสร้าง
-                    </>
-                  ) : (
-                    <>
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      สร้างเนื้อหาทั้งหมดอัตโนมัติ
-                    </>
-                  )}
-                </motion.button>
+
               </div>
             </div>
           </div>
@@ -1498,48 +1715,6 @@ const ClassroomPage = () => {
                                     >
                                       <Edit className="w-4 h-4" />
                                     </button>
-                                    {/* <button
-                                      onClick={() => navigate(`/dashboard/teacher/lessons/${lesson.id}?classroomId=${classroomId}`)}
-                                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition"
-                                      title="เล่นบทเรียน"
-                                    >
-                                      <Play className="w-4 h-4" />
-                                    </button> */}
-                                    {/* Play Test Button */}
-                                    {/* {(() => {
-                                      const lessonTests = classroomData?.tests?.filter(t => t.lessonId === lesson.id || t.lessonId?.toString() === lesson.id?.toString()) || [];
-                                      const firstTest = lessonTests[0];
-                                      return firstTest ? (
-                                        <button
-                                          onClick={() => navigate(`/dashboard/student/tests/${firstTest.id || firstTest._id}`)}
-                                          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition"
-                                          title="เล่นแบบทดสอบ"
-                                        >
-                                          <FileText className="w-4 h-4 text-purple-600" />
-                                        </button>
-                                      ) : null;
-                                    })()} */}
-                                    {/* Play Game Button */}
-                                    {/* {(() => {
-                                      const lessonGames = classroomData?.games?.filter(g => g.lessonId === lesson.id || g.lessonId?.toString() === lesson.id?.toString()) || [];
-                                      const firstGame = lessonGames[0];
-                                      return firstGame ? (
-                                        <button
-                                          onClick={() => navigate(`/dashboard/student/games/${firstGame.id || firstGame._id}`)}
-                                          className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition"
-                                          title="เล่นเกม"
-                                        >
-                                          <Gamepad2 className="w-4 h-4 text-yellow-600" />
-                                        </button>
-                                      ) : null;
-                                    })()} */}
-                                    {/* <button
-                                      onClick={() => handleViewLesson(lesson.id)}
-                                      className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
-                                      title="ดูรายละเอียดบทเรียน"
-                                    >
-                                      <Search className="w-4 h-4" />
-                                    </button> */}
                                     <button
                                       onClick={() => handleDeleteLesson(lesson.id)}
                                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
@@ -1571,48 +1746,109 @@ const ClassroomPage = () => {
             </h3>
           </div>
           <div className="p-6">
-            {!classroomData?.tests || classroomData.tests.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">ยังไม่มีแบบทดสอบ</div>
+            {/* Tests Toolbar */}
+            <div className="mb-6 space-y-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  value={testSearch}
+                  onChange={(e) => setTestSearch(e.target.value)}
+                  placeholder="ค้นหาชื่อแบบทดสอบ..."
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all shadow-sm"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 bg-white px-3 py-2 border border-gray-200 rounded-xl shadow-sm">
+                  <Filter className="w-4 h-4 text-gray-400" />
+                  <select
+                    value={testType}
+                    onChange={(e) => setTestType(e.target.value)}
+                    className="bg-transparent text-sm font-medium focus:outline-none"
+                  >
+                    <option value="all">ทุกประเภท</option>
+                    <option value="pre_test">ก่อนเรียน (Pre-test)</option>
+                    <option value="post_test">หลังเรียน (Post-test)</option>
+                    <option value="normal">ทั่วไป</option>
+                  </select>
+                </div>
+
+
+
+                <div className="flex items-center gap-2 bg-white px-3 py-2 border border-gray-200 rounded-xl shadow-sm ml-auto">
+                  <TrendingUp className="w-4 h-4 text-gray-400" />
+                  <select
+                    value={testSort}
+                    onChange={(e) => setTestSort(e.target.value)}
+                    className="bg-transparent text-sm font-medium focus:outline-none"
+                  >
+                    <option value="newest">ใหม่ - เก่า</option>
+                    <option value="oldest">เก่า - ใหม่</option>
+                    <option value="name">เรียงตามชื่อ (ก-ฮ)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {isLoadingTests ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              </div>
+            ) : !testsData || testsData.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 font-medium">ไม่พบแบบทดสอบที่ตรงกับเงื่อนไข</p>
+              </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {classroomData.tests.map((test) => (
-                  <div key={test.id} className="p-4 border border-gray-200 rounded-xl hover:shadow-md transition bg-white">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="p-2 bg-blue-50 rounded-lg">
-                        <FileText className="w-6 h-6 text-purple-600" />
+                {testsData.map((test) => (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    key={test.id || test._id}
+                    className="p-4 border border-gray-100 rounded-2xl hover:shadow-lg hover:border-purple-200 transition-all bg-white group"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className={`p-3 rounded-xl ${test.isActive ? 'bg-purple-50 text-purple-600' : 'bg-gray-50 text-gray-400'}`}>
+                        <FileText className="w-6 h-6" />
                       </div>
-                      <div className="flex gap-1">
-                        {/* <button
-                          onClick={() => navigate(`/dashboard/student/tests/${test.id || test._id}`)}
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                          title="เล่นแบบทดสอบ"
-                        >
-                          <Play className="w-4 h-4 text-green-600" />
-                        </button> */}
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                          onClick={() => handleViewTest(test.id)}
-                          className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-lg transition"
-                          title="ดูรายละเอียดแบบทดสอบ"
+                          onClick={() => handleViewTest(test.id || test._id)}
+                          className="p-2 text-indigo-500 hover:bg-indigo-50 rounded-xl transition"
+                          title="ดูรายละเอียด"
                         >
-                          <Search className="w-4 h-4" />
+                          <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteTest(test.id)}
-                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition"
-                          title="ลบแบบทดสอบ"
+                          onClick={() => handleDeleteTest(test.id || test._id)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition"
+                          title="ลบ"
                         >
-                          <Trash className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
-                    <h4 className="font-semibold text-gray-900 mb-1 line-clamp-1">{test.title}</h4>
-                    <div className="flex items-center justify-between text-sm text-gray-600 mt-3">
-                      <span className="bg-gray-100 px-2 py-1 rounded text-xs">
-                        {test.type === 'PRE_TEST' ? 'ก่อนเรียน' : test.type === 'POST_TEST' ? 'หลังเรียน' : 'ทั่วไป'}
+                    <h4 className="font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-purple-600 transition-colors">
+                      {test.title}
+                    </h4>
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
+                      <div className="flex gap-2">
+                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${test.type === 'PRE_TEST' ? 'bg-orange-50 text-orange-600' :
+                          test.type === 'POST_TEST' ? 'bg-green-50 text-green-600' :
+                            'bg-blue-50 text-blue-600'
+                          }`}>
+                          {test.type === 'PRE_TEST' ? 'ก่อนเรียน' : test.type === 'POST_TEST' ? 'หลังเรียน' : 'ทั่วไป'}
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold text-gray-400 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {test.questions?.length || 0} ข้อ
                       </span>
-                      <span>{test.questions?.length || 0} ข้อ</span>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -1628,47 +1864,105 @@ const ClassroomPage = () => {
             </h3>
           </div>
           <div className="p-6">
-            {!classroomData?.games || classroomData.games.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">ยังไม่มีเกม</div>
+            {/* Games Toolbar */}
+            <div className="mb-6 space-y-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  value={gameSearch}
+                  onChange={(e) => setGameSearch(e.target.value)}
+                  placeholder="ค้นหาชื่อเกม..."
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all shadow-sm"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 bg-white px-3 py-2 border border-gray-200 rounded-xl shadow-sm">
+                  <Filter className="w-4 h-4 text-gray-400" />
+                  <select
+                    value={gameType}
+                    onChange={(e) => setGameType(e.target.value)}
+                    className="bg-transparent text-sm font-medium focus:outline-none"
+                  >
+                    <option value="all">ทุกประเภท</option>
+                    <option value="matching">จับคู่ (Matching)</option>
+                    <option value="linking">โยงเส้น (Linking)</option>
+                    <option value="drag_drop">จัดหมวดหมู่ (Drag & Drop)</option>
+                  </select>
+                </div>
+
+
+
+                <div className="flex items-center gap-2 bg-white px-3 py-2 border border-gray-200 rounded-xl shadow-sm ml-auto">
+                  <TrendingUp className="w-4 h-4 text-gray-400" />
+                  <select
+                    value={gameSort}
+                    onChange={(e) => setGameSort(e.target.value)}
+                    className="bg-transparent text-sm font-medium focus:outline-none"
+                  >
+                    <option value="newest">ใหม่ - เก่า</option>
+                    <option value="oldest">เก่า - ใหม่</option>
+                    <option value="name">เรียงตามชื่อ (ก-ฮ)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {isLoadingGames ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600"></div>
+              </div>
+            ) : !gamesData || gamesData.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                <Gamepad2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 font-medium">ไม่พบเกมที่ตรงกับเงื่อนไข</p>
+              </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {classroomData.games.map((game) => (
-                  <div key={game.id} className="p-4 border border-gray-200 rounded-xl hover:shadow-md transition bg-white">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="p-2 bg-purple-50 rounded-lg">
-                        <Gamepad2 className="w-6 h-6 text-yellow-600" />
+                {gamesData.map((game) => (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    key={game.id || game._id}
+                    className="p-4 border border-gray-100 rounded-2xl hover:shadow-lg hover:border-yellow-200 transition-all bg-white group"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className={`p-3 rounded-xl ${game.isActive ? 'bg-yellow-50 text-yellow-600' : 'bg-gray-50 text-gray-400'}`}>
+                        <Gamepad2 className="w-6 h-6" />
                       </div>
-                      <div className="flex gap-1">
-                        {/* <button
-                          onClick={() => navigate(`/dashboard/student/games/${game.id || game._id}`)}
-                          className="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition"
-                          title="เล่นเกม"
-                        >
-                          <Play className="w-4 h-4 text-Yellow-600" />
-                        </button> */}
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                          onClick={() => handleViewGame(game.id)}
-                          className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-lg transition"
-                          title="ดูรายละเอียดเกม"
+                          onClick={() => handleViewGame(game.id || game._id)}
+                          className="p-2 text-indigo-500 hover:bg-indigo-50 rounded-xl transition"
+                          title="ดูรายละเอียด"
                         >
-                          <Search className="w-4 h-4" />
+                          <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteGame(game.id)}
-                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition"
-                          title="ลบเกม"
+                          onClick={() => handleDeleteGame(game.id || game._id)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition"
+                          title="ลบ"
                         >
-                          <Trash className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
-                    <h4 className="font-semibold text-gray-900 mb-1 line-clamp-1">{game.title}</h4>
-                    <div className="flex items-center justify-between text-sm text-gray-600 mt-3">
-                      <span className="bg-gray-100 px-2 py-1 rounded text-xs">
-                        {game.type}
-                      </span>
+                    <h4 className="font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-yellow-600 transition-colors">
+                      {game.title}
+                    </h4>
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
+                      <div className="flex gap-2">
+                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${game.type === 'MATCHING' ? 'bg-blue-50 text-blue-600' :
+                          game.type === 'LINKING' ? 'bg-indigo-50 text-indigo-600' :
+                            'bg-purple-50 text-purple-600'
+                          }`}>
+                          {game.type === 'MATCHING' ? 'จับคู่' : game.type === 'LINKING' ? 'โยงเส้น' : 'จัดหมวดหมู่'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -1793,8 +2087,15 @@ const ClassroomPage = () => {
         )}
       </div>
 
-      {/* Bulk Add Students Modal */}
-      {/* Add Student To Class Modal */}
+      {/* Modals */}
+      <PdfImportPreviewModal
+        isOpen={showPdfPreviewModal}
+        onClose={() => setShowPdfPreviewModal(false)}
+        previewData={pdfPreviewData}
+        onConfirm={handlePdfConfirm}
+        isSubmitting={isConfirmingPdf}
+      />
+
       {showAddStudentsModal && (
         <AddStudentToClassModal
           isOpen={showAddStudentsModal}
@@ -2040,27 +2341,44 @@ const ClassroomPage = () => {
                           <img src={q.imageUrl} alt="Question" className="max-w-md rounded border border-gray-200" />
                         </div>
                       )}
-                      {q.imageOptions && q.imageOptions.length > 0 && (
-                        <div className="mb-3 grid grid-cols-2 gap-2">
-                          {q.imageOptions.map((imgUrl, imgIdx) => (
-                            <img key={imgIdx} src={imgUrl} alt={`Option ${imgIdx + 1}`} className="max-w-xs rounded border border-gray-200" />
-                          ))}
-                        </div>
-                      )}
                       {q.options && (
-                        <div className="space-y-2 mb-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                           {q.options.map((opt, optIdx) => {
                             const isCorrect = q.isMultipleChoice
                               ? Array.isArray(q.correctAnswer) && q.correctAnswer.includes(optIdx)
                               : q.correctAnswer === optIdx;
+                            const imgUrl = q.imageOptions && q.imageOptions[optIdx];
+
                             return (
-                              <div key={optIdx} className={`flex items-center gap-2 p-2 rounded ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-white border border-gray-200'
-                                }`}>
-                                <span className={`px-2 py-1 rounded text-sm ${isCorrect ? 'bg-green-100 text-green-800 font-semibold' : 'bg-gray-100 text-gray-700'
-                                  }`}>
-                                  {optIdx + 1}. {opt}
-                                </span>
-                                {isCorrect && <Check className="w-4 h-4 text-green-600" />}
+                              <div key={optIdx} className={`relative flex flex-col items-center justify-center p-4 rounded-xl transition-all ${isCorrect ? 'bg-green-50 border-2 border-green-500 shadow-sm' : 'bg-white border-2 border-gray-100 hover:border-indigo-100'}`}>
+                                {/* Check icon for correct answer */}
+                                {isCorrect && (
+                                  <div className="absolute top-2 right-2 bg-green-500 text-white p-1 rounded-full shadow-sm z-10">
+                                    <Check className="w-4 h-4" />
+                                  </div>
+                                )}
+
+                                {/* Option Number Badge */}
+                                <div className={`absolute top-2 left-2 w-7 h-7 flex items-center justify-center rounded-lg font-black text-sm ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                  {['ก', 'ข', 'ค', 'ง'][optIdx] || optIdx + 1}
+                                </div>
+
+                                <div className="mt-4 flex flex-col items-center gap-3 w-full">
+                                  {imgUrl ? (
+                                    <>
+                                      <img src={imgUrl} alt={`Option ${optIdx + 1}`} className="max-h-32 object-contain rounded-lg shadow-sm" />
+                                      {opt && (
+                                        <span className={`text-base font-bold text-center px-2 ${isCorrect ? 'text-green-800' : 'text-gray-700'}`}>
+                                          {opt}
+                                        </span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <span className={`text-lg font-bold text-center py-4 px-2 ${isCorrect ? 'text-green-800' : 'text-gray-700'}`}>
+                                      {opt}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             );
                           })}
@@ -2568,6 +2886,17 @@ const ClassroomPage = () => {
             const maxOrder = Math.max(...lessons.map(l => l.orderIndex || 0));
             return maxOrder + 1;
           })()}
+          initialTitle={(() => {
+            const lessons = classroomData?.lessons || [];
+            if (lessons.length === 0) return 'บทที่ 1 ';
+
+            const extractNum = (str) => {
+              const m = str.match(/บทที่\s*(\d+)/);
+              return m ? parseInt(m[1], 10) : 0;
+            };
+            const maxNum = Math.max(...lessons.map(l => extractNum(l.title)));
+            return `บทที่ ${maxNum + 1} `;
+          })()}
         />
       )}
 
@@ -2591,11 +2920,23 @@ const ClassroomPage = () => {
               createLessonMutation.mutate(payload);
               setShowQuickCreate(false);
             }}
+            initialTitle={(() => {
+              const lessons = classroomData?.lessons || [];
+              if (lessons.length === 0) return 'บทที่ 1 ';
+
+              const extractNum = (str) => {
+                const m = str.match(/บทที่\s*(\d+)/);
+                return m ? parseInt(m[1], 10) : 0;
+              };
+              const maxNum = Math.max(...lessons.map(l => extractNum(l.title)));
+              return `บทที่ ${maxNum + 1} `;
+            })()}
           />
         )}
       </AnimatePresence>
-    </div >
+    </div>
   );
 };
 
 export default ClassroomPage;
+

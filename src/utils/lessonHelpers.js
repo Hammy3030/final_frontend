@@ -111,8 +111,20 @@ export function getStarRating(score) {
  * @returns {number} Total stars
  */
 export function calculateTotalStars(testAttempts) {
-  return testAttempts.reduce((total, attempt) => {
+  if (!testAttempts || !testAttempts.length) return 0;
+  
+  // Group by testId and take the best score
+  const bestScores = {};
+  testAttempts.forEach(attempt => {
+    const testId = attempt.testId || attempt.test_id;
+    if (!testId) return;
     const score = attempt.score || 0;
+    if (!bestScores[testId] || score > bestScores[testId]) {
+      bestScores[testId] = score;
+    }
+  });
+
+  return Object.values(bestScores).reduce((total, score) => {
     if (score >= 90) return total + 3;
     if (score >= 80) return total + 2;
     if (score >= 60) return total + 1;
@@ -126,7 +138,25 @@ export function calculateTotalStars(testAttempts) {
  * @returns {number} Number of gold medals
  */
 export function calculateGoldMedals(gameAttempts) {
-  return gameAttempts.filter(attempt => (attempt.score || 0) === 100).length;
+  if (!gameAttempts || !gameAttempts.length) return 0;
+
+  // Group by gameId and take the best score
+  const bestScores = {};
+  gameAttempts.forEach(attempt => {
+    const gameId = attempt.gameId || attempt.game_id;
+    if (!gameId) return;
+    const score = attempt.score || 0;
+    if (!bestScores[gameId] || score > bestScores[gameId]) {
+      bestScores[gameId] = score;
+    }
+  });
+
+  return Object.values(bestScores).reduce((total, score) => {
+    if (score >= 100) return total + 3;
+    if (score >= 80) return total + 2;
+    if (score >= 60) return total + 1;
+    return total;
+  }, 0);
 }
 
 /**

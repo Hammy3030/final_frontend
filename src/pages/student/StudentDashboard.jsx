@@ -34,7 +34,6 @@ const FloatingParticle = ({ delay, duration, x, y, size, color }) => (
   />
 );
 
-/* ── Shimmer overlay for cards ── */
 const ShimmerOverlay = () => (
   <motion.div
     className="absolute inset-0 rounded-[inherit] overflow-hidden pointer-events-none"
@@ -57,12 +56,7 @@ const StudentDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
-
-  const [stats, setStats] = useState({
-    total: 0,
-    completed: 0,
-    percent: 0
-  });
+  const [stats, setStats] = useState({ total: 0, completed: 0, percent: 0 });
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -92,198 +86,110 @@ const StudentDashboard = () => {
     navigate("/login");
   };
 
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 18 }, (_, i) => ({
-        id: i,
-        delay: Math.random() * 4,
-        duration: 4 + Math.random() * 4,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: 6 + Math.random() * 14,
-        color: ["rgba(167,139,250,0.35)", "rgba(251,191,36,0.3)", "rgba(96,165,250,0.3)", "rgba(251,146,60,0.3)", "rgba(52,211,153,0.3)"][Math.floor(Math.random() * 5)],
-      })),
-    []
+  const particles = useMemo(() =>
+    Array.from({ length: 12 }, (_, i) => ({
+      id: i,
+      delay: Math.random() * 4,
+      duration: 5 + Math.random() * 5,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 10 + Math.random() * 15,
+      color: ["rgba(167,139,250,0.2)", "rgba(251,191,36,0.2)", "rgba(96,165,250,0.2)"][Math.floor(Math.random() * 3)],
+    })), []
   );
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
-  };
-  const fadeUp = {
-    hidden: { opacity: 0, y: 28 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
-  };
-
-  const statCards = [
-    {
-      icon: BookOpen,
-      label: "บทเรียนทั้งหมด",
-      value: stats.total,
-      gradient: "from-sky-400 to-blue-500",
-      shadow: "shadow-blue-300/40",
-      iconStroke: 2,
-    },
-    {
-      icon: Check,
-      label: "เรียนจบแล้ว",
-      value: stats.completed,
-      gradient: "from-emerald-400 to-green-500",
-      shadow: "shadow-green-300/40",
-      iconStroke: 2.5,
-    },
-    {
-      icon: TrendingUp,
-      label: "ความคืบหน้า",
-      value: `${stats.percent}%`,
-      percent: null,
-      gradient: "from-pink-400 to-rose-500",
-      shadow: "shadow-pink-300/40",
-      iconStroke: 2,
-    },
-  ];
-
-  const actionButtons = [
-    {
-      to: "/dashboard/student/lessons",
-      emoji: "📚",
-      label: "บทเรียน",
-      sublabel: "เริ่มเรียนรู้เลย",
-      gradient: "from-violet-500 via-purple-500 to-indigo-500",
-      shadow: "hover:shadow-purple-400/50",
-      glow: "rgba(139,92,246,0.4)",
-    },
-    {
-      to: "/dashboard/student/writing",
-      emoji: "✏️",
-      label: "ฝึกเขียน",
-      sublabel: "ฝึกเขียนตัวอักษร",
-      gradient: "from-amber-400 via-yellow-400 to-orange-400",
-      shadow: "hover:shadow-amber-400/50",
-      glow: "rgba(251,191,36,0.4)",
-    },
-  ];
+  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
+  const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
   return (
-    <div className="min-h-screen relative overflow-hidden font-[Sarabun,Noto_Sans_Thai,sans-serif]">
-      {/* ── Background ── */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 via-sky-50 to-purple-100" />
-        {particles.map((p) => (
-          <FloatingParticle key={p.id} {...p} />
-        ))}
+    <div className="min-h-screen relative overflow-x-hidden bg-[#f8faff] font-[Sarabun,sans-serif] pb-10">
+      {/* Background Particles */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        {particles.map((p) => <FloatingParticle key={p.id} {...p} />)}
       </div>
 
-      <motion.div
-        className="relative z-10 max-w-2xl mx-auto px-4 py-6 sm:py-10 min-h-screen"
-        variants={container}
-        initial="hidden"
-        animate={isLoaded ? "show" : "hidden"}
+      <motion.div 
+        className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10"
+        variants={container} initial="hidden" animate={isLoaded ? "show" : "hidden"}
       >
-        {/* ── Header ── */}
-        <motion.div variants={fadeUp} className="flex items-center justify-between mb-6 sm:mb-10">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="relative">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/80 border-[3px] border-white shadow-lg flex items-center justify-center text-3xl sm:text-4xl">🧒🏻</div>
+        {/* Header Section */}
+        <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4 text-center sm:text-left">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white shadow-xl border-4 border-white flex items-center justify-center text-4xl overflow-hidden">
+              🧒🏻
             </div>
             <div>
-              <p className="text-sm sm:text-base text-indigo-400 font-semibold leading-none mb-1">สวัสดี</p>
-              <div className="flex items-center gap-2 relative">
-                <h1 className="text-xl sm:text-2xl font-extrabold text-gray-800 leading-none">
-                  {user?.name || "นักเรียน"}
-                </h1>
-                <div className="flex-shrink-0">
-                  {/* <AudioButton
-                    text={`สวัสดี ${user?.name || "นักเรียน"}`}
-                    variant="mini"
-                    className="!p-1 !bg-indigo-100 !text-indigo-600 border-none"
-                    iconSize={18}
-                  /> */}
-                </div>
-              </div>
+              <p className="text-indigo-500 font-bold text-sm sm:text-base">สวัสดีจ้า</p>
+              <h1 className="text-xl sm:text-3xl font-black text-gray-800 tracking-tight">
+                {user?.name || "นักเรียนคนเก่ง"}
+              </h1>
             </div>
           </div>
           <motion.button
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-white/70 backdrop-blur-md text-gray-600 border border-white/50 rounded-full px-4 py-2 text-sm font-bold shadow-lg hover:bg-red-50 hover:text-red-500 transition-colors"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
+            className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-6 py-2.5 rounded-full text-gray-600 font-bold shadow-lg hover:bg-red-50 hover:text-red-500 transition-all border border-white"
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
           >
             <LogOut size={18} />
-            <span className="hidden sm:inline">ออกจากระบบ</span>
+            <span>ออกจากระบบ</span>
           </motion.button>
         </motion.div>
 
-        {/* ── Stats Cards ── */}
-        <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-10">
-          {statCards.map((card, i) => {
-            const Icon = card.icon;
-            return (
-              <motion.div
-                key={i}
-                className={`relative bg-gradient-to-br ${card.gradient} rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col items-center justify-center shadow-lg ${card.shadow} overflow-hidden`}
-                whileHover={{ y: -6, scale: 1.03 }}
-              >
-                <ShimmerOverlay />
-                <Icon className="text-white/90 mb-6 relative z-10" size={window.innerWidth < 640 ? 50 : 50} strokeWidth={card.iconStroke} />
-                <div className="flex items-center justify-center w-full mb-1 relative z-10">
-                  {/* Trick: ใช้ Relative + Absolute เพื่อให้ Text อยู่กลางและปุ่มเสียงต่อท้าย */}
-                  <div className="relative flex items-center justify-center">
-                    <p className="text-[11px] sm:text-sm font-bold text-white/90 text-center leading-none">
-                      {card.label}
-                    </p>
-                    <div className="absolute left-full ml-1">
-                      <AudioButton
-                        text={card.label}
-                        variant="mini"
-                        className="!p-0.5 !bg-white/20 !text-white border-none"
-                        iconSize={20}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <motion.span
-                  className="text-3xl sm:text-5xl font-extrabold text-white relative z-10 leading-none mt-1"
-                  initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4 + (i * 0.1), type: "spring" }}
-                >
-                  {card.value}
-                </motion.span>
-              </motion.div>
-            );
-          })}
+        {/* Stats Grid - Responsive: 1 col on small mobile, 3 col on tablet up */}
+        <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+          {[
+            { label: "บทเรียนทั้งหมด", val: stats.total, icon: BookOpen, color: "from-sky-400 to-blue-500" },
+            { label: "เรียนจบแล้ว", val: stats.completed, icon: Check, color: "from-emerald-400 to-green-500" },
+            { label: "ความคืบหน้า", val: `${stats.percent}%`, icon: TrendingUp, color: "from-pink-400 to-rose-500" }
+          ].map((card, i) => (
+            <motion.div
+              key={i}
+              className={`relative p-6 rounded-[2rem] bg-gradient-to-br ${card.color} shadow-2xl flex flex-col items-center justify-center text-white overflow-hidden min-h-[160px]`}
+              whileHover={{ y: -5 }}
+            >
+              <ShimmerOverlay />
+              <card.icon size={32} className="mb-2 opacity-90" />
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm sm:text-base font-bold opacity-90">{card.label}</span>
+                <AudioButton text={card.label} variant="mini" className="!p-1.5" iconSize={16} />
+              </div>
+              <span className="text-4xl sm:text-5xl font-black">{card.val}</span>
+            </motion.div>
+          ))}
         </motion.div>
 
-        {/* ── Action Buttons ── */}
-        <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-          {actionButtons.map((btn, i) => (
-            <motion.div key={i} whileHover={{ y: -8, scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-              <Link
-                to={btn.to}
-                className={`relative block bg-gradient-to-br ${btn.gradient} rounded-3xl sm:rounded-[2rem] p-8 sm:p-12 text-center no-underline shadow-xl ${btn.shadow} overflow-hidden group`}
+        {/* Action Buttons Grid - Responsive: 1 col on mobile, 2 col on tablet up */}
+        <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+          {[
+            { 
+              to: "/dashboard/student/lessons", emoji: "📚", label: "บทเรียน", sub: "เข้าสู่โลกแห่งการเรียนรู้", 
+              color: "from-violet-500 to-indigo-600", shadow: "shadow-indigo-200" 
+            },
+            { 
+              to: "/dashboard/student/writing", emoji: "✏️", label: "ฝึกเขียน", sub: "ฝึกลายมือให้สวยงาม", 
+              color: "from-orange-400 to-yellow-500", shadow: "shadow-orange-200" 
+            }
+          ].map((btn, i) => (
+            <Link key={i} to={btn.to} className="group no-underline">
+              <motion.div
+                className={`relative p-8 sm:p-12 rounded-[2.5rem] bg-gradient-to-br ${btn.color} ${btn.shadow} flex flex-col items-center text-center text-white overflow-hidden h-full min-h-[250px] sm:min-h-[320px] transition-all`}
+                whileHover={{ y: -10, scale: 1.02 }} whileTap={{ scale: 0.98 }}
               >
                 <ShimmerOverlay />
-                <motion.div className="text-6xl sm:text-7xl mb-4 relative z-10 leading-none" animate={{ y: [0, -6, 0] }} transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}>
-                  {btn.emoji}
-                </motion.div>
-                <div className="flex items-center justify-center mb-2 relative z-10">
-                  <div className="relative flex items-center justify-center">
-                    <h2 className="text-2xl sm:text-4xl font-extrabold text-white leading-none">
-                      {btn.label}
-                    </h2>
-                    <div className="absolute left-full ml-3">
-                      <AudioButton
-                        text={`${btn.label} ${btn.sublabel}`}
-                        variant="mini"
-                        className="!bg-white/20 !text-white !p-2 rounded-full border border-white/10"
-                        iconSize={window.innerWidth < 640 ? 18 : 24}
-                      />
-                    </div>
+                <div className="relative z-10 flex flex-col items-center h-full justify-center">
+                  <span className="text-6xl sm:text-8xl mb-4 group-hover:scale-110 transition-transform duration-500 drop-shadow-lg">
+                    {btn.emoji}
+                  </span>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h2 className="text-3xl sm:text-5xl font-black tracking-tight">{btn.label}</h2>
+                    <AudioButton text={btn.label} variant="mini" iconSize={24} />
                   </div>
+                  <p className="text-white/80 font-bold text-base sm:text-lg">{btn.sub}</p>
                 </div>
-                <p className="text-sm sm:text-base font-medium text-white/70 relative z-10">{btn.sublabel}</p>
-                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 rounded-full blur-2xl opacity-0 group-hover:opacity-60 transition-opacity" style={{ background: btn.glow }} />
-              </Link>
-            </motion.div>
+                {/* Decorative Glow */}
+                <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all" />
+              </motion.div>
+            </Link>
           ))}
         </motion.div>
       </motion.div>

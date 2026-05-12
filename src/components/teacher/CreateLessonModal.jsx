@@ -20,13 +20,13 @@ import { useForm } from 'react-hook-form';
  * Create Lesson Modal Component
  * Redesigned for premium UX and ease of use
  */
-const CreateLessonModal = ({ onClose, onSubmit, isLoading = false, nextOrder = 1 }) => {
+const CreateLessonModal = ({ onClose, onSubmit, isLoading = false, nextOrder = 1, initialTitle = '' }) => {
   const [step, setStep] = useState(1);
   const { register, handleSubmit, formState: { errors }, setValue, watch, trigger } = useForm({
     defaultValues: {
       orderIndex: nextOrder,
       category: 'custom',
-      title: '',
+      title: initialTitle,
       content: ''
     }
   });

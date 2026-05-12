@@ -11,12 +11,11 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import StudentDashboard from './pages/student/StudentDashboard';
-import MockStudentDashboard from './pages/student/MockStudentDashboard';
+import StudentLessonsPage from './pages/student/StudentLessonsPage';
 import ClassroomPage from './pages/teacher/ClassroomPage';
-import KidFriendlyLessonPage from './pages/student/KidFriendlyLessonPage';
 import LessonDetailPage from './pages/student/LessonDetailPage';
-import MockTestPage from './pages/student/MockTestPage';
-import MockGamePage from './pages/student/MockGamePage';
+import StudentTestPage from './pages/student/StudentTestPage';
+import StudentGamePage from './pages/student/StudentGamePage';
 import WritingPage from './pages/student/WritingPage';
 import ProfilePage from './pages/ProfilePage';
 
@@ -73,6 +72,8 @@ function App() {
                     </ProtectedRoute>
                   } />
 
+
+
                   <Route path="/dashboard/teacher/classrooms/:classroomId" element={
                     <ProtectedRoute role="TEACHER">
                       <ClassroomPage />
@@ -96,7 +97,7 @@ function App() {
 
                   <Route path="/dashboard/student/lessons" element={
                     <ProtectedRoute role="STUDENT">
-                      <MockStudentDashboard />
+                      <StudentLessonsPage />
                     </ProtectedRoute>
                   } />
 
@@ -108,13 +109,13 @@ function App() {
 
                   <Route path="/dashboard/student/tests/:testId" element={
                     <ProtectedRoute>
-                      <MockTestPage />
+                      <StudentTestPage />
                     </ProtectedRoute>
                   } />
 
                   <Route path="/dashboard/student/games/:gameId" element={
                     <ProtectedRoute>
-                      <MockGamePage />
+                      <StudentGamePage />
                     </ProtectedRoute>
                   } />
 
