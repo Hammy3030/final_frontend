@@ -257,6 +257,13 @@ const StudentTestPage = () => {
               </div>
             </div>
             <div className="p-8 text-center">
+              <div className="mb-6 bg-indigo-50/50 p-4 rounded-2xl border-2 border-dashed border-indigo-100">
+                <p className="text-lg font-bold text-indigo-600">
+                  {test.type === 'PRE_TEST' 
+                    ? "แบบทดสอบนี้ไม่มีเกณฑ์การผ่าน (ไม่มีสอบตก) ทำเพื่อวัดความรู้พื้นฐานจ้า" 
+                    : "แบบทดสอบหลังเรียน ต้องทำคะแนนให้ผ่านเกณฑ์ 60% ขึ้นไปนะ สู้ๆ!"}
+                </p>
+              </div>
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-indigo-50 p-4 rounded-3xl border border-indigo-100">
                   <Clock className="mx-auto mb-1 text-indigo-500" size={24} />
@@ -484,11 +491,17 @@ const StudentTestPage = () => {
         <div className="flex-1 min-h-0 flex items-center justify-center p-4">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden text-center">
             <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-12 text-white relative">
-              <div className="text-8xl mb-4 drop-shadow-xl">{calculateScore() >= (test?.passingScore || 60) ? '🏆' : '✌🏻'}</div>
-              <h2 className="text-4xl font-black mb-2">{calculateScore() >= (test?.passingScore || 60) ? 'สอบผ่าน!' : 'พยายามใหม่นะ'}</h2>
-              <div className="flex justify-center gap-3">
-                {[1, 2, 3].map(s => <Star key={s} size={40} className={s <= getStarRating(calculateScore()) ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'} />)}
+              <div className="text-8xl mb-4 drop-shadow-xl">
+                {test.type === 'PRE_TEST' ? '✨' : calculateScore() >= 60 ? '🏆' : '✌🏻'}
               </div>
+              <h2 className="text-4xl font-black mb-2">
+                {test.type === 'PRE_TEST' ? 'ทำแบบทดสอบเสร็จสิ้น' : calculateScore() >= 60 ? 'สอบผ่าน!' : 'พยายามใหม่นะ'}
+              </h2>
+              {test.type === 'POST_TEST' && (
+                <div className="flex justify-center gap-3">
+                  {[1, 2, 3].map(s => <Star key={s} size={40} className={s <= getStarRating(calculateScore()) ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'} />)}
+                </div>
+              )}
             </div>
             <div className="p-8">
               <div className="bg-indigo-50 rounded-3xl p-6 mb-8 flex justify-around">
@@ -503,9 +516,45 @@ const StudentTestPage = () => {
                 </div>
               </div>
               <div className="space-y-4">
-                <motion.button whileHover={{ y: -4 }} onClick={() => navigate('/dashboard/student/lessons')} className="w-full py-5 bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-3xl font-black text-xl shadow-xl shadow-orange-100">
-                  {test.type === 'PRE_TEST' ? '📚 เริ่มบทเรียน' : '🎮 กลับไปหน้าหลัก'}
-                </motion.button>
+                {test.type === 'PRE_TEST' ? (
+                  <>
+                    <motion.button whileHover={{ y: -4 }} onClick={() => navigate(`/dashboard/student/lessons/${test.lessonId || test.lesson_id}`)} className="w-full py-5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-3xl font-black text-xl shadow-xl shadow-indigo-100 flex items-center justify-center gap-3">
+                      📖 เข้าสู่บทเรียน
+                    </motion.button>
+                    <button onClick={() => navigate('/dashboard/student/lessons')} className="w-full py-3 text-gray-400 font-bold hover:text-gray-600 transition">
+                      กลับหน้าหลัก
+                    </button>
+                  </>
+                ) : calculateScore() >= 60 ? (
+                  <>
+                    <motion.button 
+                      whileHover={{ y: -4 }} 
+                      onClick={() => {
+                        const gameId = test?.lesson?.games?.[0]?._id || test?.lesson?.games?.[0]?.id;
+                        if (gameId) {
+                          navigate(`/dashboard/student/games/${gameId}`);
+                        } else {
+                          navigate('/dashboard/student/lessons');
+                        }
+                      }} 
+                      className="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-3xl font-black text-xl shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
+                    >
+                      🎮 ไปเล่นเกม
+                    </motion.button>
+                    <button onClick={() => navigate('/dashboard/student/lessons')} className="w-full py-3 text-gray-400 font-bold hover:text-gray-600 transition">
+                      กลับหน้าหลัก
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <motion.button whileHover={{ y: -4 }} onClick={startTest} className="w-full py-5 bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-3xl font-black text-xl shadow-xl shadow-orange-100 flex items-center justify-center gap-3">
+                      ทำใหม่อีกครั้ง
+                    </motion.button>
+                    <button onClick={() => navigate('/dashboard/student/lessons')} className="w-full py-3 text-gray-400 font-bold hover:text-gray-600 transition">
+                      กลับหน้าหลัก
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
