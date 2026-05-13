@@ -257,12 +257,23 @@ const StudentTestPage = () => {
               </div>
             </div>
             <div className="p-8 text-center">
-              <div className="mb-6 bg-indigo-50/50 p-4 rounded-2xl border-2 border-dashed border-indigo-100">
-                <p className="text-lg font-bold text-indigo-600">
-                  {test.type === 'PRE_TEST' 
-                    ? "แบบทดสอบนี้ไม่มีเกณฑ์การผ่าน (ไม่มีสอบตก) ทำเพื่อวัดความรู้พื้นฐานจ้า" 
-                    : "แบบทดสอบหลังเรียน ต้องทำคะแนนให้ผ่านเกณฑ์ 60% ขึ้นไปนะ สู้ๆ!"}
-                </p>
+              <div className="mb-6 flex flex-col items-center gap-4">
+                <div className="bg-indigo-50/50 p-6 rounded-3xl border-2 border-dashed border-indigo-100 w-full">
+                  <p className="text-2xl font-black text-indigo-600 leading-relaxed">
+                    {test.type === 'PRE_TEST' 
+                      ? "มาลองทำกันเถอะ ไม่มีสอบตกจ้า" 
+                      : "ตั้งใจนะ ต้องได้คะแนนมากกว่าครึ่ง (60%) ถึงจะผ่าน"}
+                  </p>
+                </div>
+                <AudioButton 
+                  text={test.type === 'PRE_TEST' 
+                    ? "มาลองทำกันเถอะ ไม่มีสอบตกจ้า" 
+                    : "ตั้งใจนะ ต้องได้คะแนนมากกว่าครึ่ง หรือ 60 เปอร์เซ็นต์ ถึงจะผ่านนะจ๊ะ สู้สู้"} 
+                  variant="large" 
+                  iconSize={48} 
+                  className="bg-indigo-500 text-white border-indigo-400 shadow-xl"
+                  autoPlay={true}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-indigo-50 p-4 rounded-3xl border border-indigo-100">
@@ -490,13 +501,20 @@ const StudentTestPage = () => {
       {testState === 'result' && (
         <div className="flex-1 min-h-0 flex items-center justify-center p-4">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden text-center">
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-12 text-white relative">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-12 text-white relative flex flex-col items-center">
               <div className="text-8xl mb-4 drop-shadow-xl">
                 {test.type === 'PRE_TEST' ? '✨' : calculateScore() >= 60 ? '🏆' : '✌🏻'}
               </div>
-              <h2 className="text-4xl font-black mb-2">
-                {test.type === 'PRE_TEST' ? 'ทำแบบทดสอบเสร็จสิ้น' : calculateScore() >= 60 ? 'สอบผ่าน!' : 'พยายามใหม่นะ'}
+              <h2 className="text-4xl font-black mb-4">
+                {test.type === 'PRE_TEST' ? 'ทำเสร็จแล้วจ้า' : calculateScore() >= 60 ? 'สอบผ่านแล้ว!' : 'ลองทำใหม่นะ'}
               </h2>
+              <AudioButton 
+                text={test.type === 'PRE_TEST' ? 'ทำแบบทดสอบเสร็จแล้วจ้า เก่งมากเลย' : calculateScore() >= 60 ? 'ยินดีด้วยจ้า สอบผ่านแล้วนะ เก่งที่สุดเลย' : 'ไม่เป็นไรนะจ๊ะ ลองพยายามใหม่อีกครั้งนะ สู้สู้'} 
+                variant="large" 
+                iconSize={32} 
+                className="bg-white/20 text-white border-white/30 mb-4"
+                autoPlay={true}
+              />
               {test.type === 'POST_TEST' && (
                 <div className="flex justify-center gap-3">
                   {[1, 2, 3].map(s => <Star key={s} size={40} className={s <= getStarRating(calculateScore()) ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'} />)}
