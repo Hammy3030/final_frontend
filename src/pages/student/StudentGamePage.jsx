@@ -104,6 +104,8 @@ const StudentGamePage = () => {
     toast.success('เริ่มเกม');
   };
 
+  const { refreshProfile } = useAuth();
+
   const handleGameComplete = async () => {
     const finalScore = calculateScore();
     setScore(finalScore);
@@ -128,6 +130,9 @@ const StudentGamePage = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      // Refresh user profile to update medals in state
+      await refreshProfile();
     } catch (err) { 
       console.error('Error submitting game:', err);
     }

@@ -242,12 +242,35 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const refreshProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const response = await axios.get(getApiUrl('/auth/profile'), {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.data.success) {
+          dispatch({
+            type: 'UPDATE_USER',
+            payload: response.data.data.user,
+          });
+          return { success: true, user: response.data.data.user };
+        }
+      }
+      return { success: false };
+    } catch (error) {
+      console.error('Refresh profile error:', error);
+      return { success: false, error };
+    }
+  };
+
   const value = useMemo(() => ({
     ...state,
     login,
     register,
     logout,
     updateUser,
+    refreshProfile,
   }), [state, login, register, logout, updateUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

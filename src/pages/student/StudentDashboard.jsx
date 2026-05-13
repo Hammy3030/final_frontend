@@ -58,10 +58,15 @@ const StudentDashboard = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [stats, setStats] = useState({ total: 0, completed: 0, percent: 0 });
 
+  const { refreshProfile } = useAuth();
+
   useEffect(() => {
     const fetchProgress = async () => {
       try {
         const token = localStorage.getItem('token');
+        // Refresh profile to get latest persistent stars/medals
+        await refreshProfile();
+        
         const response = await axios.get(getApiUrl('/student/lessons'), {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -79,7 +84,7 @@ const StudentDashboard = () => {
       }
     };
     fetchProgress();
-  }, []);
+  }, [refreshProfile]);
 
   const handleLogout = async () => {
     await logout();
@@ -100,6 +105,14 @@ const StudentDashboard = () => {
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
   const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
+
+  const statsList = [
+    { label: "บทเรียนทั้งหมด", val: stats.total, icon: BookOpen, color: "from-sky-400 to-blue-500" },
+    { label: "เรียนจบแล้ว", val: stats.completed, icon: Check, color: "from-emerald-400 to-green-500" },
+    { label: "ความคืบหน้า", val: `${stats.percent}%`, icon: TrendingUp, color: "from-pink-400 to-rose-500" },
+    { label: "เหรียญทอง", val: user?.stars || 0, emoji: "🥇", color: "from-orange-400 to-red-500" },
+    { label: "ดาวสะสม", val: user?.coins || 0, emoji: "⭐", color: "from-amber-400 to-yellow-500" }
+  ];
 
   return (
     <div className="min-h-screen relative overflow-x-hidden bg-[#f8faff] font-[Sarabun,sans-serif] pb-10">
@@ -135,25 +148,21 @@ const StudentDashboard = () => {
           </motion.button>
         </motion.div>
 
-        {/* Stats Grid - Responsive: 1 col on small mobile, 3 col on tablet up */}
-        <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
-          {[
-            { label: "บทเรียนทั้งหมด", val: stats.total, icon: BookOpen, color: "from-sky-400 to-blue-500" },
-            { label: "เรียนจบแล้ว", val: stats.completed, icon: Check, color: "from-emerald-400 to-green-500" },
-            { label: "ความคืบหน้า", val: `${stats.percent}%`, icon: TrendingUp, color: "from-pink-400 to-rose-500" }
-          ].map((card, i) => (
+        {/* Stats Grid - Responsive: Grid cols adjusted for 5 items */}
+        <motion.div variants={fadeUp} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
+          {statsList.map((card, i) => (
             <motion.div
               key={i}
-              className={`relative p-6 rounded-[2rem] bg-gradient-to-br ${card.color} shadow-2xl flex flex-col items-center justify-center text-white overflow-hidden min-h-[160px]`}
+              className={`relative p-4 rounded-[2rem] bg-gradient-to-br ${card.color} shadow-2xl flex flex-col items-center justify-center text-white overflow-hidden min-h-[140px]`}
               whileHover={{ y: -5 }}
             >
               <ShimmerOverlay />
-              <card.icon size={32} className="mb-2 opacity-90" />
+              {card.icon ? <card.icon size={28} className="mb-2 opacity-90" /> : <span className="text-3xl mb-2">{card.emoji}</span>}
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm sm:text-base font-bold opacity-90">{card.label}</span>
-                <AudioButton text={card.label} variant="mini" className="!p-1.5" iconSize={16} />
+                <span className="text-xs sm:text-sm font-bold opacity-90">{card.label}</span>
+                <AudioButton text={card.label} variant="mini" className="!p-1.5" iconSize={14} />
               </div>
-              <span className="text-4xl sm:text-5xl font-black">{card.val}</span>
+              <span className="text-3xl sm:text-4xl font-black">{card.val}</span>
             </motion.div>
           ))}
         </motion.div>
