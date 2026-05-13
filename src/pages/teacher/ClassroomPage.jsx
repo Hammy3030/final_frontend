@@ -95,6 +95,7 @@ const ClassroomPage = () => {
   const [studentTestStatus, setStudentTestStatus] = useState('all');
   const [studentScoreLevel, setStudentScoreLevel] = useState('all');
   const [studentGameStatus, setStudentGameStatus] = useState('all');
+  const [studentActivityStatus, setStudentActivityStatus] = useState('all');
   const [studentSort, setStudentSort] = useState('name-asc');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
@@ -186,7 +187,7 @@ const ClassroomPage = () => {
 
   // Fetch classroom students with filters
   const { data: studentsResult, isLoading: isLoadingStudents } = useQuery(
-    ['classroom-students', classroomId, debouncedStudentSearch, studentGender, studentProgressFilter, studentTestStatus, studentScoreLevel, studentGameStatus, studentSort],
+    ['classroom-students', classroomId, debouncedStudentSearch, studentGender, studentProgressFilter, studentTestStatus, studentScoreLevel, studentGameStatus, studentActivityStatus, studentSort],
     async () => {
       const token = localStorage.getItem('token');
       const response = await axios.get(
@@ -199,6 +200,7 @@ const ClassroomPage = () => {
             testStatus: studentTestStatus,
             scoreLevel: studentScoreLevel,
             gameStatus: studentGameStatus,
+            activityStatus: studentActivityStatus,
             sort: studentSort
           },
           headers: { Authorization: `Bearer ${token}` }
@@ -932,6 +934,7 @@ const ClassroomPage = () => {
     setStudentTestStatus('all');
     setStudentScoreLevel('all');
     setStudentGameStatus('all');
+    setStudentActivityStatus('all');
     setStudentSort('name-asc');
     setCurrentPage(1);
   };
@@ -1282,7 +1285,7 @@ const ClassroomPage = () => {
                   </button>
 
                   {/* Clear Filters */}
-                  {(studentSearch || studentGender !== 'all' || studentProgressFilter !== 'all' || studentTestStatus !== 'all' || studentScoreLevel !== 'all' || studentGameStatus !== 'all') && (
+                  {(studentSearch || studentGender !== 'all' || studentProgressFilter !== 'all' || studentTestStatus !== 'all' || studentScoreLevel !== 'all' || studentGameStatus !== 'all' || studentActivityStatus !== 'all') && (
                     <button
                       onClick={clearFilters}
                       className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 hover:bg-red-50 rounded transition"
@@ -1395,6 +1398,42 @@ const ClassroomPage = () => {
                           <option value="all">ทั้งหมด</option>
                           <option value="played">เคยเล่นแล้ว</option>
                           <option value="not-played">ยังไม่เคยเล่น</option>
+                        </select>
+                      </div>
+
+                      {/* Progress Filter */}
+                      <div className="flex flex-col gap-1.5 min-w-[160px]">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ความคืบหน้า</label>
+                        <select
+                          value={studentProgressFilter}
+                          onChange={(e) => {
+                            setStudentProgressFilter(e.target.value);
+                            handleFilterChange();
+                          }}
+                          className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white transition-all"
+                        >
+                          <option value="all">ทั้งหมด</option>
+                          <option value="completed">เรียนจบแล้ว (100%)</option>
+                          <option value="learning">กำลังเรียน (1-99%)</option>
+                          <option value="not-started">ยังไม่เริ่มเรียน (0%)</option>
+                        </select>
+                      </div>
+
+                      {/* Activity Status */}
+                      <div className="flex flex-col gap-1.5 min-w-[160px]">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ความเคลื่อนไหว</label>
+                        <select
+                          value={studentActivityStatus}
+                          onChange={(e) => {
+                            setStudentActivityStatus(e.target.value);
+                            handleFilterChange();
+                          }}
+                          className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:bg-white transition-all"
+                        >
+                          <option value="all">ทั้งหมด</option>
+                          <option value="active">เข้าเรียนล่าสุดใน 7 วัน</option>
+                          <option value="inactive">ไม่ได้เข้าเรียนเกิน 7 วัน</option>
+                          <option value="never">ไม่เคยเข้าเรียนเลย</option>
                         </select>
                       </div>
                     </div>
