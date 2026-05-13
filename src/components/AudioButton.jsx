@@ -45,7 +45,7 @@ const AudioButton = ({
     ghost:
       'p-2 rounded-full bg-white border border-white/10 text-blue-600 hover:bg-blue-50/80 transition-colors',
     large:
-      'p-4 rounded-full bg-white border border-blue-100 text-blue-600 hover:bg-blue-50 transition-all shadow-md'
+      'p-4 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-xl ring-4 ring-indigo-200'
   };
 
   if (!text) return null;

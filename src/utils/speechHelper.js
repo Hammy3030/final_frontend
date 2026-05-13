@@ -8,9 +8,9 @@ function getThaiVoice() {
   if (typeof window === 'undefined' || !window.speechSynthesis) return null;
   const voices = window.speechSynthesis.getVoices();
   // Prefer Microsoft Narachat Online or other high-quality Thai voices if available
-  const thai = voices.find(v => v.lang === 'th-TH' && v.name.includes('Online')) || 
-               voices.find(v => v.lang === 'th-TH') || 
-               voices.find(v => v.lang.startsWith('th'));
+  const thai = voices.find(v => v.lang === 'th-TH' && v.name.includes('Online')) ||
+    voices.find(v => v.lang === 'th-TH') ||
+    voices.find(v => v.lang.startsWith('th'));
   return thai || voices[0];
 }
 
@@ -82,7 +82,7 @@ export const speakText = async (text, options = {}) => {
     const audio = await speakWithElevenLabs(normalizedText);
     currentAudio = audio;
     console.log('✅ Playing ElevenLabs audio (Brian Cortez)');
-    
+
     audio.onended = () => {
       currentAudio = null;
       if (options.onEnd) options.onEnd();
@@ -94,7 +94,7 @@ export const speakText = async (text, options = {}) => {
     };
   } catch (error) {
     console.warn('❌ ElevenLabs TTS failed, falling back to Web Speech API:', error.message || error);
-    
+
     if (!window.speechSynthesis) {
       console.error('🚨 Web Speech API not supported in this browser');
       if (options.onError) options.onError(error);
@@ -103,15 +103,15 @@ export const speakText = async (text, options = {}) => {
 
     try {
       console.log('🔄 Using native fallback (Browser Voice)');
-      
+
       const utterance = new SpeechSynthesisUtterance(normalizedText);
       utterance.lang = options.lang || 'th-TH';
-      
+
       // Balanced rate for kids (local voices sound faster than AI)
-      utterance.rate = options.rate ?? 0.8; 
+      utterance.rate = options.rate ?? 0.8;
       utterance.pitch = options.pitch ?? 1.0;
       utterance.volume = options.volume ?? 1;
-      
+
       const voice = options.voice ?? getThaiVoice();
       if (voice) utterance.voice = voice;
 

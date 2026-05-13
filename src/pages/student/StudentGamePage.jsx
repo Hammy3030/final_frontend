@@ -173,8 +173,8 @@ const StudentGamePage = () => {
         <h1 className="text-lg font-black text-gray-900 truncate max-w-[200px] hidden md:block">{game.title}</h1>
       </div>
 
-      {/* Main Game Area - FIXED VIEWPORT, NO SCROLL, LANDSCAPE OPTIMIZED */}
-      <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
+      {/* Main Game Area - FIXED LANDSCAPE & NO SCROLL */}
+      <div className="h-[calc(100dvh-80px)] flex flex-col overflow-hidden relative">
         {/* Background Decoration */}
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/50" />
         
@@ -195,7 +195,7 @@ const StudentGamePage = () => {
                         text="เกมนี้ต้องจับคู่ภาพที่เหมือนกันนะจ๊ะ" 
                         variant="large" 
                         iconSize={64} 
-                        className="bg-purple-500 text-white shadow-2xl scale-125 hover:scale-150 transition-transform"
+                        className="scale-125 hover:scale-150 transition-transform mb-4"
                         autoPlay={true}
                       />
                       <motion.button 
@@ -213,8 +213,8 @@ const StudentGamePage = () => {
           )}
 
           {gameState === 'playing' && (
-            <motion.div key="playing" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="flex-1 min-h-0 p-3 sm:p-6 flex flex-col overflow-hidden">
-                <div className="flex-1 bg-white/60 backdrop-blur-sm rounded-[3rem] shadow-xl border-4 border-white p-4 sm:p-6 flex flex-col overflow-hidden">
+            <motion.div key="playing" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="flex-1 min-h-0 p-4 flex flex-col overflow-hidden">
+                <div className="flex-1 bg-white/60 backdrop-blur-sm rounded-[3rem] shadow-xl border-4 border-white p-4 flex flex-col overflow-hidden">
                    <MatchingGame game={game} matches={matches} selectedItem={selectedItem} onSelect={setSelectedItem} onMatch={handleMatch} onComplete={handleGameComplete} />
                 </div>
             </motion.div>
@@ -229,7 +229,7 @@ const StudentGamePage = () => {
                       text="เย้! เก่งมากจ้า เล่นเกมเสร็จแล้วนะ" 
                       variant="large" 
                       iconSize={48} 
-                      className="bg-white/20 text-white border-white/30 mb-6 scale-110"
+                      className="mb-6 scale-110"
                       autoPlay={true}
                     />
                     <p className="text-xl font-bold opacity-90 text-white">ทำคะแนนได้ {calculateScore()}%</p>
@@ -255,10 +255,10 @@ const MatchingGame = ({ game, matches, selectedItem, onSelect, onMatch }) => {
   const shuffledImages = useMemo(() => [...pairs].sort(() => Math.random() - 0.5), [pairs.length]);
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
-      <div className="flex-1 min-h-0 grid grid-cols-2 gap-4 sm:gap-12 overflow-hidden px-2 sm:px-10">
+    <div className="flex-1 min-h-0 flex gap-4 overflow-hidden">
+      <div className="flex-1 min-h-0 grid grid-cols-2 gap-4 sm:gap-10 overflow-hidden px-2 sm:px-6">
         {/* Words Column */}
-        <div className="flex flex-col gap-4 overflow-y-auto pr-2 scrollbar-hide py-4">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col gap-2 py-2">
           {shuffledWords.map((pair, idx) => {
             const isMatched = matches[pair.word] !== undefined;
             const isSelected = selectedItem?.word === pair.word;
@@ -268,16 +268,16 @@ const MatchingGame = ({ game, matches, selectedItem, onSelect, onMatch }) => {
                 whileHover={isMatched ? {} : { scale: 1.02, x: 5 }} 
                 whileTap={isMatched ? {} : { scale: 0.98 }} 
                 onClick={() => !isMatched && onSelect(pair)} 
-                className={`flex-1 min-h-[90px] rounded-[2rem] border-4 font-black text-2xl sm:text-4xl transition-all flex items-center justify-center gap-3 ${isSelected ? 'bg-indigo-500 text-white border-indigo-400 shadow-xl scale-105' : isMatched ? 'bg-emerald-100 text-emerald-600 border-emerald-200 opacity-40' : 'bg-gray-50 text-gray-700 border-gray-100 hover:border-indigo-300 shadow-sm'}`}
+                className={`flex-1 min-h-0 rounded-2xl border-2 font-black text-2xl sm:text-4xl transition-all flex items-center justify-center gap-3 ${isSelected ? 'bg-indigo-500 text-white border-indigo-400 shadow-xl scale-105' : isMatched ? 'bg-emerald-50 text-emerald-600 border-emerald-100 opacity-30' : 'bg-white text-gray-700 border-gray-100 hover:border-indigo-400 shadow-sm'}`}
               >
                 {pair.word}
-                <AudioButton text={pair.word} variant="mini" iconSize={20} className="shrink-0" onClick={e => e.stopPropagation()} />
+                <AudioButton text={pair.word} variant="mini" iconSize={20} className="shrink-0 bg-indigo-50 border-none" onClick={e => e.stopPropagation()} />
               </motion.button>
             );
           })}
         </div>
         {/* Images Column */}
-        <div className="flex flex-col gap-4 overflow-y-auto pr-2 scrollbar-hide py-4">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col gap-2 py-2">
           {shuffledImages.map((pair, idx) => {
             const matchedKey = Object.entries(matches).find(([k, v]) => v === pair.word)?.[0];
             const isMatched = matchedKey !== undefined;
@@ -288,9 +288,9 @@ const MatchingGame = ({ game, matches, selectedItem, onSelect, onMatch }) => {
                 whileTap={isMatched ? {} : { scale: 0.98 }} 
                 onClick={() => selectedItem && onMatch(selectedItem, pair)} 
                 disabled={isMatched} 
-                className={`flex-1 min-h-[90px] rounded-[2rem] border-4 p-4 transition-all flex items-center justify-center ${isMatched ? 'bg-emerald-100 border-emerald-200 opacity-40' : 'bg-gray-50 border-gray-100 hover:border-purple-300 shadow-sm'}`}
+                className={`flex-1 min-h-0 rounded-2xl border-2 p-2 transition-all flex items-center justify-center ${isMatched ? 'bg-emerald-50 border-emerald-100 opacity-30' : 'bg-white border-gray-100 hover:border-purple-400 shadow-sm'}`}
               >
-                {pair.image ? <img src={pair.image} className="h-full w-full object-contain mx-auto drop-shadow-md" /> : <ImageIcon size={48} className="mx-auto text-gray-300" />}
+                {pair.image ? <img src={pair.image} className="h-full w-full object-contain mx-auto drop-shadow-sm" /> : <ImageIcon size={48} className="mx-auto text-gray-300" />}
               </motion.button>
             );
           })}

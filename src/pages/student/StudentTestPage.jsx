@@ -258,12 +258,12 @@ const StudentTestPage = () => {
             </div>
             <div className="p-8 text-center flex flex-col items-center justify-center min-h-[300px]">
               <div className="mb-10 flex flex-col items-center justify-center">
-                <AudioButton 
-                  text={test.type === 'PRE_TEST' 
-                    ? "มาลองทำกันเถอะ ไม่มีสอบตกจ้า" 
-                    : "แบบทดสอบหลังเรียน ต้องได้คะแนนเกินหกสิบเปอร์เซ็นต์ถึงจะผ่านนะจ๊ะ"} 
-                  variant="large" 
-                  iconSize={64} 
+                <AudioButton
+                  text={test.type === 'PRE_TEST'
+                    ? "มาลองทำกันเถอะ ไม่มีสอบตกจ้า"
+                    : "แบบทดสอบหลังเรียน ต้องได้คะแนนเกินหกสิบเปอร์เซ็นต์ถึงจะผ่านนะจ๊ะ"}
+                  variant="large"
+                  iconSize={64}
                   className="bg-indigo-500 text-white border-indigo-400 shadow-2xl scale-125 hover:scale-150 transition-transform"
                   autoPlay={true}
                 />
@@ -319,7 +319,7 @@ const StudentTestPage = () => {
                   {currentQuestion.question}
                 </h2>
                 <div className="bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100 shrink-0">
-                   <span className="text-indigo-600 font-black">ข้อ {currentQuestionIndex + 1}/{questions.length}</span>
+                  <span className="text-indigo-600 font-black">ข้อ {currentQuestionIndex + 1}/{questions.length}</span>
                 </div>
               </div>
 
@@ -469,7 +469,7 @@ const StudentTestPage = () => {
               <button onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))} disabled={currentQuestionIndex === 0} className={`h-full px-6 rounded-2xl font-black text-lg flex items-center gap-2 transition ${currentQuestionIndex === 0 ? 'bg-gray-200 text-gray-400 opacity-50' : 'bg-white text-indigo-600 border-2 border-indigo-100 hover:border-indigo-500'}`}>
                 <ChevronLeft size={24} /> ก่อนหน้า
               </button>
-              
+
               <div className="flex-1 flex justify-center gap-1.5">
                 {questions.map((_, idx) => (
                   <div key={idx} className={`w-3 h-3 rounded-full transition-all ${idx === currentQuestionIndex ? 'bg-indigo-500 scale-125' : answers[questions[idx]._id || questions[idx].id] !== undefined ? 'bg-green-400' : 'bg-gray-300'}`} />
@@ -496,13 +496,13 @@ const StudentTestPage = () => {
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden text-center">
             <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-12 text-white relative flex flex-col items-center">
               <div className="text-8xl mb-6 drop-shadow-xl">
-                {test.type === 'PRE_TEST' ? '✨' : calculateScore() >= 60 ? '🏆' : '✌🏻'}
+                {test.type === 'PRE_TEST' ? '🧸' : calculateScore() >= 60 ? '🏆' : '✌🏻'}
               </div>
-              <AudioButton 
-                text={test.type === 'PRE_TEST' ? 'เก่งมากเลยจ้า ทำเสร็จแล้ว' : calculateScore() >= 60 ? 'เย้! เก่งมาก สอบผ่านแล้วนะ' : 'ไม่เป็นไรนะจ๊ะ ลองพยายามใหม่อีกครั้งนะ'} 
-                variant="large" 
-                iconSize={48} 
-                className="bg-white/20 text-white border-white/30 mb-6 scale-110"
+              <AudioButton
+                text={test.type === 'PRE_TEST' ? 'เก่งมากเลยจ้า ทำเสร็จแล้ว' : calculateScore() >= 60 ? 'เย้! เก่งมาก สอบผ่านแล้วนะ' : 'ไม่เป็นไรนะจ๊ะ ลองพยายามใหม่อีกครั้งนะ'}
+                variant="large"
+                iconSize={48}
+                className="mb-6 scale-110"
                 autoPlay={true}
               />
               {test.type === 'POST_TEST' && (
@@ -535,8 +535,8 @@ const StudentTestPage = () => {
                   </>
                 ) : calculateScore() >= 60 ? (
                   <>
-                    <motion.button 
-                      whileHover={{ y: -4 }} 
+                    <motion.button
+                      whileHover={{ y: -4 }}
                       onClick={() => {
                         const gameId = test?.lesson?.games?.[0]?._id || test?.lesson?.games?.[0]?.id;
                         if (gameId) {
@@ -544,7 +544,7 @@ const StudentTestPage = () => {
                         } else {
                           navigate('/dashboard/student/lessons');
                         }
-                      }} 
+                      }}
                       className="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-3xl font-black text-xl shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
                     >
                       🎮 ไปเล่นเกม
