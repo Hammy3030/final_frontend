@@ -116,7 +116,7 @@ export function calculateTotalStars(testAttempts) {
   // Group by testId and take the best score
   const bestScores = {};
   testAttempts.forEach(attempt => {
-    const testId = attempt.testId || attempt.test_id;
+    const testId = (attempt.testId || attempt.test_id)?.toString();
     if (!testId) return;
     const score = attempt.score || 0;
     if (!bestScores[testId] || score > bestScores[testId]) {
@@ -143,7 +143,7 @@ export function calculateGoldMedals(gameAttempts) {
   // Group by gameId and take the best score
   const bestScores = {};
   gameAttempts.forEach(attempt => {
-    const gameId = attempt.gameId || attempt.game_id;
+    const gameId = (attempt.gameId || attempt.game_id)?.toString();
     if (!gameId) return;
     const score = attempt.score || 0;
     if (!bestScores[gameId] || score > bestScores[gameId]) {

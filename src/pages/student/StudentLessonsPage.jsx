@@ -40,33 +40,30 @@ const StudentLessonsPage = () => {
   const isLargeScreen = windowWidth >= 1024;
   const lessonCardsPerPage = isLargeScreen ? 2 : 1;
 
-  const { refreshProfile } = useAuth();
-
   const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      // Always refresh profile to get latest persistent stats
-      await refreshProfile();
-      
       const [lRes, tRes, gRes] = await Promise.all([
         axios.get(getApiUrl('/student/lessons'), { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(getApiUrl('/student/tests'), { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(getApiUrl('/student/games'), { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      if (lRes.data.success) setLessons(lRes.data.data.lessons || []);
+      if (lRes.data.success) setLessons(lRes.data.data?.lessons || lRes.data.data || []);
       if (tRes.data.success) {
-        setTestsList(tRes.data.data.tests || []);
+        const tests = tRes.data.data?.tests || tRes.data.data || [];
+        setTestsList(tests);
         const allT = [];
-        tRes.data.data.tests.forEach(t => t.testAttempts && allT.push(...t.testAttempts));
+        tests.forEach(t => t.testAttempts && Array.isArray(t.testAttempts) && allT.push(...t.testAttempts));
         setTestAttempts(allT);
       }
       if (gRes.data.success) {
+        const games = gRes.data.data?.games || gRes.data.data || [];
         const allG = [];
-        gRes.data.data.games?.forEach(g => g.gameAttempts && allG.push(...g.gameAttempts));
+        games.forEach(g => g.gameAttempts && Array.isArray(g.gameAttempts) && allG.push(...g.gameAttempts));
         setGameAttempts(allG);
       }
     } catch (e) { console.error(e); }
-  }, [refreshProfile]);
+  }, []);
 
   useEffect(() => { if (user?.id) fetchData(); }, [user?.id, fetchData]);
 
@@ -74,9 +71,9 @@ const StudentLessonsPage = () => {
     { Icon: BookOpen, label: "บทเรียน", val: lessons.length, grad: "from-sky-400 to-blue-500", sound: `บทเรียนทั้งหมด ${lessons.length} บท` },
     { Icon: CheckCircle, label: "เรียนจบ", val: lessons.filter(l => l.status === 'COMPLETED' || l.progress?.isCompleted).length, grad: "from-emerald-400 to-green-500", sound: `เรียนจบไปแล้ว ${lessons.filter(l => l.status === 'COMPLETED' || l.progress?.isCompleted).length} บท` },
     { Icon: TrendingUp, label: "ก้าวหน้า", val: `${lessons.length > 0 ? Math.round((lessons.filter(l => l.status === 'COMPLETED' || l.progress?.isCompleted).length / lessons.length) * 100) : 0}%`, grad: "from-pink-400 to-rose-500", sound: `ความก้าวหน้าตอนนี้` },
-    { emoji: "⭐", label: "ดาว", val: user?.coins ?? calculateTotalStars(testAttempts), grad: "from-amber-400 to-yellow-500", sound: `ดาวสะสมทั้งหมด ${user?.coins ?? calculateTotalStars(testAttempts)} ดวง` },
-    { emoji: "🥇", label: "เหรียญ", val: user?.stars ?? calculateGoldMedals(gameAttempts), grad: "from-orange-400 to-red-500", sound: `เหรียญทองทั้งหมด ${user?.stars ?? calculateGoldMedals(gameAttempts)} เหรียญ` },
-    { emoji: "🎯", label: "ตรา", val: user?.stamps ?? calculateStamps(lessons), grad: "from-cyan-400 to-blue-500", sound: `ตราประทับทั้งหมด ${user?.stamps ?? calculateStamps(lessons)} อัน` },
+    { emoji: "⭐", label: "ดาว", val: calculateTotalStars(testAttempts), grad: "from-amber-400 to-yellow-500", sound: `ดาวสะสมทั้งหมด ${calculateTotalStars(testAttempts)} ดวง` },
+    { emoji: "🥇", label: "เหรียญ", val: calculateGoldMedals(gameAttempts), grad: "from-orange-400 to-red-500", sound: `เหรียญทองทั้งหมด ${calculateGoldMedals(gameAttempts)} เหรียญ` },
+    { emoji: "🎯", label: "ตรา", val: calculateStamps(lessons), grad: "from-cyan-400 to-blue-500", sound: `ตราประทับทั้งหมด ${calculateStamps(lessons)} อัน` },
   ];
 
   return (
