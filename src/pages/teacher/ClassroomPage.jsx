@@ -1236,129 +1236,102 @@ const ClassroomPage = () => {
             </div>
 
             {/* Search and Filter Bar */}
-            <div className="space-y-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm mb-6">
-              {/* Row 1: Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="ค้นหาด้วยชื่อหรือรหัสนักเรียน..."
-                  value={studentSearch}
-                  onChange={(e) => {
-                    setStudentSearch(e.target.value);
-                    handleFilterChange();
-                  }}
-                  className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none"
-                />
-                {studentSearch && (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                  {/* Search */}
+                  <div className="relative flex-1 min-w-[200px] sm:max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={studentSearch}
+                      onChange={(e) => setStudentSearch(e.target.value)}
+                      placeholder="ค้นหาชื่อหรือรหัสนักเรียน..."
+                      className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all outline-none"
+                    />
+                  </div>
+
+                  {/* Gender Filter */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600 hidden sm:inline">เพศ:</span>
+                    <select
+                      value={studentGender}
+                      onChange={(e) => {
+                        setStudentGender(e.target.value);
+                        handleFilterChange();
+                      }}
+                      className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer hover:border-gray-300 transition-all"
+                    >
+                      <option value="all">ทั้งหมด</option>
+                      <option value="male">ชาย</option>
+                      <option value="female">หญิง</option>
+                    </select>
+                  </div>
+
+                  {/* Advanced Filter Toggle */}
                   <button
-                    onClick={() => {
-                      setStudentSearch('');
-                      handleFilterChange();
-                    }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-200 rounded-full transition"
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-sm font-medium ${showAdvancedFilters
+                      ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm'
+                      : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
                   >
-                    <X className="w-4 h-4" />
+                    <SlidersHorizontal className="w-4 h-4" />
+                    <span className="hidden sm:inline">ตัวกรองขั้นสูง</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showAdvancedFilters ? 'rotate-180' : ''}`} />
                   </button>
-                )}
-              </div>
 
-              {/* Row 2: Basic Filters & Actions */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Gender */}
-                <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                  <span className="text-sm font-medium text-gray-700">เพศ:</span>
-                  <select
-                    value={studentGender}
-                    onChange={(e) => {
-                      setStudentGender(e.target.value);
-                      handleFilterChange();
-                    }}
-                    className="bg-transparent text-sm focus:outline-none cursor-pointer"
-                  >
-                    <option value="all">ทั้งหมด</option>
-                    <option value="male">ชาย</option>
-                    <option value="female">หญิง</option>
-                  </select>
+                  {/* Clear Filters */}
+                  {(studentSearch || studentGender !== 'all' || studentProgressFilter !== 'all' || studentTestStatus !== 'all' || studentScoreLevel !== 'all' || studentGameStatus !== 'all') && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 hover:bg-red-50 rounded transition"
+                    >
+                      ล้างค่าทั้งหมด
+                    </button>
+                  )}
                 </div>
 
-                {/* Progress */}
-                <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                  <span className="text-sm font-medium text-gray-700">บทเรียน:</span>
-                  <select
-                    value={studentProgressFilter}
-                    onChange={(e) => {
-                      setStudentProgressFilter(e.target.value);
-                      handleFilterChange();
-                    }}
-                    className="bg-transparent text-sm focus:outline-none cursor-pointer"
-                  >
-                    <option value="all">ทั้งหมด</option>
-                    <option value="no-progress">ยังไม่เริ่ม</option>
-                    <option value="in-progress">กำลังเรียน</option>
-                    <option value="completed">จบแล้ว</option>
-                  </select>
-                </div>
+                <div className="flex items-center gap-4">
+                  {/* Items Per Page */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">แสดง:</span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="px-2 py-1 bg-white border border-gray-200 rounded text-sm focus:ring-1 focus:ring-blue-500 outline-none"
+                    >
+                      <option value="5">5</option>
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                      <option value="50">50</option>
+                    </select>
+                  </div>
 
-                {/* Advanced Filter Toggle */}
-                <button
-                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-sm font-medium ${showAdvancedFilters
-                    ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm'
-                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                    }`}
-                >
-                  <SlidersHorizontal className="w-4 h-4" />
-                  ตัวกรองขั้นสูง
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showAdvancedFilters ? 'rotate-180' : ''}`} />
-                </button>
-
-                {/* Clear Filters */}
-                {(studentSearch || studentGender !== 'all' || studentProgressFilter !== 'all' || studentTestStatus !== 'all' || studentScoreLevel !== 'all' || studentGameStatus !== 'all') && (
-                  <button
-                    onClick={clearFilters}
-                    className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 hover:bg-red-50 rounded transition"
-                  >
-                    ล้างค่าทั้งหมด
-                  </button>
-                )}
-
-                {/* Items Per Page */}
-                <div className="flex items-center gap-2 ml-4">
-                  <span className="text-sm text-gray-600">แสดง:</span>
-                  <select
-                    value={itemsPerPage}
-                    onChange={(e) => {
-                      setItemsPerPage(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="px-2 py-1 bg-white border border-gray-200 rounded text-sm focus:ring-1 focus:ring-blue-500 outline-none"
-                  >
-                    <option value="5">5</option>
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                  </select>
-                </div>
-
-                {/* Sort - Far Right */}
-                <div className="ml-auto flex items-center gap-2">
-                  <ArrowUpDown className="w-4 h-4 text-gray-400" />
-                  <select
-                    value={studentSort}
-                    onChange={(e) => {
-                      setStudentSort(e.target.value);
-                      handleFilterChange();
-                    }}
-                    className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer hover:border-gray-300 transition-all"
-                  >
-                    <option value="name-asc">ชื่อ (ก-ฮ)</option>
-                    <option value="name-desc">ชื่อ (ฮ-ก)</option>
-                    <option value="progress-desc">ความคืบหน้า (มาก-น้อย)</option>
-                    <option value="progress-asc">ความคืบหน้า (น้อย-มาก)</option>
-                    <option value="test-desc">คะแนนสอบเฉลี่ย (มาก-น้อย)</option>
-                    <option value="game-desc">คะแนนเกมเฉลี่ย (มาก-น้อย)</option>
-                  </select>
+                  {/* Sort */}
+                  <div className="flex items-center gap-2">
+                    <ArrowUpDown className="w-4 h-4 text-gray-400" />
+                    <select
+                      value={studentSort}
+                      onChange={(e) => {
+                        setStudentSort(e.target.value);
+                        handleFilterChange();
+                      }}
+                      className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer hover:border-gray-300 transition-all"
+                    >
+                      <option value="name-asc">ชื่อ (ก-ฮ)</option>
+                      <option value="name-desc">ชื่อ (ฮ-ก)</option>
+                      <option value="studentId-asc">รหัสนักเรียน (น้อย-มาก)</option>
+                      <option value="studentId-desc">รหัสนักเรียน (มาก-น้อย)</option>
+                      <option value="progress-desc">ความคืบหน้า (มาก-น้อย)</option>
+                      <option value="progress-asc">ความคืบหน้า (น้อย-มาก)</option>
+                      <option value="test-desc">คะแนนสอบเฉลี่ย (มาก-น้อย)</option>
+                      <option value="game-desc">คะแนนเกมเฉลี่ย (มาก-น้อย)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 

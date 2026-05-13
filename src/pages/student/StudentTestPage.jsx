@@ -543,19 +543,18 @@ const StudentTestPage = () => {
                     </h4>
                   </div>
 
-                  <div className={`flex-1 grid grid-cols-1 ${currentQuestion.imageUrl && !currentQuestion.imageUrl.startsWith('emoji:') ? 'md:grid-cols-2' : ''} gap-4 min-h-[420px]`}>
+                  <div className="flex-1 flex flex-col lg:flex-row gap-4 sm:gap-6 min-h-0 overflow-hidden">
                     {/* Left Side: Illustration / Media */}
                     {currentQuestion.imageUrl && !currentQuestion.imageUrl.startsWith('emoji:') && (
-                      <div className="flex flex-col items-center justify-center p-2 sm:p-5 ">
-                        <div className="w-68 h-68 sm:w-80 sm:h-80 bg-orange-100 rounded-3xl flex items-center justify-center border-2 border-white shadow-xl p-6 relative overflow-hidden group">
-                          <div className="absolute inset-0  from-blue-50/50 to-purple-50/50 opacity-20 group-hover:opacity-100 transition-opacity" />
+                      <div className="lg:w-1/2 flex flex-col items-center justify-center p-2 sm:p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100/50">
+                        <div className="w-full max-w-full aspect-auto lg:aspect-square bg-white rounded-3xl flex items-center justify-center border-2 border-white shadow-xl p-4 relative overflow-hidden group">
                           <img
                             src={currentQuestion.imageUrl}
                             alt="Question"
-                            className="max-w-full max-h-full object-contain relative z-100 drop-shadow-sm"
+                            className="w-full h-auto max-h-[300px] sm:max-h-[500px] object-contain relative z-10 drop-shadow-md"
                             onError={(e) => {
                               e.target.style.display = 'none';
-                              e.target.parentElement.innerHTML = '<span class="text-80xl">🖼️</span>';
+                              e.target.parentElement.innerHTML = '<span class="text-6xl sm:text-8xl">🖼️</span>';
                             }}
                           />
                         </div>
@@ -563,7 +562,7 @@ const StudentTestPage = () => {
                     )}
 
                     {/* Right Side: Options / Content */}
-                    <div className="flex flex-col justify-center flex-1">
+                    <div className="flex-1 flex flex-col overflow-y-auto pr-1">
 
 
 
@@ -579,10 +578,10 @@ const StudentTestPage = () => {
                         </div>
                       )}
 
-                      {/* Options Section - ปรับปรุงความสูงให้สมส่วน ไม่โย่งเกินไป */}
+                      {/* Options Section */}
                       {!currentQuestion.isMatching ? (
-                        <div className="w-full max-w-4xl mx-auto py-2 px-4 sm:px-8 lg:pr-12">
-                          <div className="grid grid-cols-2 gap-4 sm:gap-6 justify-center">
+                        <div className="w-full max-w-4xl mx-auto py-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             {currentQuestion.options.map((option, index) => {
                               const questionId = currentQuestion._id || currentQuestion.id;
                               const isSelected = currentQuestion.isMultipleChoice
@@ -728,7 +727,7 @@ const StudentTestPage = () => {
                                       </button>
                                     </div>
                                   ) : isActive ? (
-                                    <div className="flex-1 grid grid-cols-2 gap-2">
+                                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                       {currentQuestion.options.map((option, index) => {
                                         const isUsed = Object.values(userMatches).includes(index);
                                         const optionImage = currentQuestion.imageOptions?.[index];

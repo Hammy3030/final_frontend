@@ -526,7 +526,7 @@ const MatchingGame = ({ game, matches, selectedItem, onSelect, onMatch, onComple
 
       {/* Game Grid - Scrollable if needed */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
           {/* Words Column */}
           {shuffledWords.map((pair, index) => {
             const isMatched = matches[pair.word] !== undefined;
@@ -597,7 +597,7 @@ const MatchingGame = ({ game, matches, selectedItem, onSelect, onMatch, onComple
                     <img
                       src={pair.image}
                       alt={pair.word}
-                      className="w-14 h-14 sm:w-20 h-20 lg:w-28 h-28 object-contain mx-auto transition-transform group-hover:scale-110"
+                      className="w-full h-auto max-h-[120px] sm:max-h-[160px] object-contain mx-auto transition-transform group-hover:scale-110"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.style.display = 'none';
@@ -680,7 +680,7 @@ const LinkingGame = ({ game, matches, onMatch, onComplete }) => {
 
       {/* Content Grid - Scrollable if needed */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Words */}
           {words.map((word, index) => (
             <motion.button
@@ -775,7 +775,7 @@ const DragDropGame = ({ game, matches, onMatch, onComplete }) => {
       </div>
 
       {/* Zones */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
         {zones.map((zone) => (
           <div
             key={zone.id}
@@ -813,9 +813,9 @@ const DragDropGame = ({ game, matches, onMatch, onComplete }) => {
               drag
               dragSnapToOrigin
               whileDrag={{ scale: 1.1, zIndex: 50, cursor: 'grabbing' }}
-              whileHover={{ scale: 1.05, cursor: 'grab' }}
-              onDragEnd={(e, info) => handleDragEnd(e, info, item)}
-              className="p-3 sm:p-4 bg-white rounded-lg border-2 border-gray-300 hover:border-purple-500 font-semibold transition shadow-sm touch-none text-sm sm:text-base"
+              whileHover={{ scale: 1.05 }}
+              onDragEnd={(event, info) => handleDragEnd(event, info, item)}
+              className="bg-white p-3 sm:p-4 rounded-xl border-2 border-gray-200 shadow-md font-bold text-gray-700 hover:border-blue-400 touch-none"
             >
               {item.text || item.word}
             </motion.button>
@@ -826,7 +826,7 @@ const DragDropGame = ({ game, matches, onMatch, onComplete }) => {
       <div className="text-center mt-8">
         <button
           onClick={onComplete}
-          className="px-8 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-semibold"
+          className="px-8 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
         >
           ตรวจคำตอบ
         </button>
@@ -853,128 +853,141 @@ const GameResult = ({ game, gameId, score, medals, onReset, onExit, onGoToNextGa
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      className="w-full h-full flex flex-col items-center justify-center px-2 sm:px-4 overflow-y-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-indigo-900/40 backdrop-blur-md"
     >
-      {/* Main Result Card */}
-      <div className="bg-gradient-to-br from-white via-purple-50 to-pink-50 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden w-full max-w-lg my-4">
-        {/* Top accent bar */}
-        <div className={`h-1 bg-gradient-to-r ${color}`}></div>
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0, y: 30 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+        className="relative bg-white/80 backdrop-blur-2xl rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] w-full max-w-lg overflow-hidden border border-white/50"
+      >
+        <div className={`h-3 w-full bg-gradient-to-r ${color}`} />
 
-        <div className="p-5 sm:p-8 md:p-10 text-center flex flex-col items-center gap-3 sm:gap-5">
-          {/* Trophy/Medal Icon */}
+        <div className="p-8 sm:p-12 text-center flex flex-col items-center gap-6">
           <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 150, damping: 12 }}
-            className="text-5xl sm:text-6xl"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', delay: 0.3, stiffness: 200 }}
+            className="relative"
           >
-            {emoji}
-          </motion.div>
-
-          {/* Message */}
-          <motion.h2
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className={`text-2xl sm:text-3xl md:text-4xl font-black bg-gradient-to-r ${color} bg-clip-text text-transparent`}
-          >
-            {text}
-          </motion.h2>
-
-          {/* Score Card */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className={`bg-gradient-to-r ${color} rounded-xl sm:rounded-2xl p-5 sm:p-8 text-white shadow-xl w-full`}
-          >
-            <p className="text-sm sm:text-base font-semibold opacity-90 mb-2">คะแนนที่ได้</p>
-            <motion.p
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.5, type: 'spring' }}
-              className="text-4xl sm:text-5xl md:text-6xl font-black mb-2"
+            <motion.div
+              animate={{ y: [0, -15, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="text-7xl sm:text-8xl filter drop-shadow-xl"
             >
-              {score}
-            </motion.p>
-            <p className="text-xs sm:text-sm opacity-90">100 คะแนนเต็ม</p>
+              {emoji}
+            </motion.div>
+            <motion.div
+              animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute -top-4 -right-4 text-2xl"
+            >
+              ✨
+            </motion.div>
           </motion.div>
 
-          {/* Medals Display */}
+          <div className="space-y-1">
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className={`text-3xl sm:text-5xl font-black bg-gradient-to-r ${color} bg-clip-text text-transparent`}
+            >
+              {text}
+            </motion.h2>
+            <p className="text-gray-500 font-medium tracking-wide">เกมเสร็จสิ้นแล้ว! มาดูคะแนนกัน</p>
+          </div>
+
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="w-full"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6 }}
+            className={`w-full bg-gradient-to-br ${color} p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group`}
           >
-            <div className="flex justify-center gap-2 sm:gap-3 mb-3">
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <p className="text-sm sm:text-base font-bold uppercase tracking-widest opacity-80 mb-1">คะแนนที่คุณทำได้</p>
+            <div className="flex items-baseline justify-center gap-1">
+              <motion.span
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8, type: 'spring' }}
+                className="text-6xl sm:text-8xl font-black tabular-nums"
+              >
+                {score}
+              </motion.span>
+              <span className="text-xl sm:text-2xl font-bold opacity-70">/ 100</span>
+            </div>
+          </motion.div>
+
+          <div className="flex flex-col items-center gap-4 w-full">
+            <div className="flex justify-center gap-4">
               {[...Array(3)].map((_, i) => (
                 <motion.div
                   key={i}
-                  initial={{ scale: 0, rotate: -180 }}
+                  initial={{ scale: 0, rotate: -20 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 0.6 + i * 0.1, type: 'spring' }}
-                  className={`${i < medals ? 'scale-125 sm:scale-150' : 'opacity-30'}`}
+                  transition={{ delay: 1 + i * 0.1, type: 'spring' }}
+                  className="relative"
                 >
-                  <Medal size={36} className={i < medals ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'} />
+                  <Medal
+                    size={48}
+                    className={`${i < medals ? 'text-yellow-400 fill-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]' : 'text-gray-200'}`}
+                  />
+                  {i < medals && (
+                    <motion.div
+                      animate={{ opacity: [0, 1, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.5 }}
+                      className="absolute inset-0 bg-yellow-200 rounded-full blur-xl -z-10"
+                    />
+                  )}
                 </motion.div>
               ))}
             </div>
             {medals > 0 && (
-              <motion.p
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.9 }}
-                className="text-base sm:text-lg font-bold text-gray-800"
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.4 }}
+                className="bg-yellow-50 text-yellow-700 px-6 py-2 rounded-full font-black text-sm border border-yellow-200 shadow-sm"
               >
-                🎁 ได้รับ {medals} เหรียญ{medals === 3 ? ' (เหรียญทอง)' : ''}
-              </motion.p>
+                ได้รับ {medals} เหรียญ{medals === 3 ? 'ทอง' : ''} สุดยอดไปเลย!
+              </motion.div>
             )}
-          </motion.div>
+          </div>
 
-
-
-          {/* Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1 }}
-            className="flex flex-col gap-2 sm:gap-3 w-full"
-          >
-            {hasNextGame && onGoToNextGame && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full mt-2">
+            {hasNextGame && (
               <motion.button
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onGoToNextGame}
-                className="flex items-center justify-center gap-2 px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg sm:rounded-xl font-bold shadow-lg hover:shadow-xl transition text-sm sm:text-base"
+                className="sm:col-span-2 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-black text-lg rounded-2xl shadow-lg shadow-green-200 transition-all flex items-center justify-center gap-2"
               >
-                <ChevronRight size={20} />
-                เกมถัดไป
+                เล่นเกมถัดไป <ChevronRight size={22} />
               </motion.button>
             )}
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={onReset}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white rounded-lg sm:rounded-xl font-bold shadow-lg hover:shadow-xl transition text-sm sm:text-base"
+              className="py-4 bg-indigo-50 text-indigo-600 font-black rounded-2xl border-2 border-indigo-100 hover:bg-indigo-100 transition-all flex items-center justify-center gap-2"
             >
-              <RotateCcw size={20} />
-              เล่นอีกครั้ง
+              <RotateCcw size={20} /> เล่นอีกครั้ง
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={onExit}
-              className="px-6 py-2.5 sm:py-3 bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700 text-white rounded-lg sm:rounded-xl font-bold shadow-lg hover:shadow-xl transition text-sm sm:text-base"
+              className="py-4 bg-gray-50 text-gray-600 font-black rounded-2xl border-2 border-gray-200 hover:bg-gray-100 transition-all"
             >
               กลับหน้าหลัก
             </motion.button>
-          </motion.div>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };
