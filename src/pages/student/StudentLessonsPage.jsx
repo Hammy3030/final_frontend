@@ -163,11 +163,11 @@ const StudentLessonsPage = () => {
                         className="bg-white rounded-[3rem] md:rounded-[4rem] overflow-hidden flex flex-col border-[8px] md:border-[12px] border-white relative shadow-2xl transition-all flex-1 h-full"
                         whileHover={canEnter ? { y: -8, scale: 1.01 } : {}}
                       >
-                        {/* Image Section: ใช้ flex-1 เพื่อให้ยืดหยุ่นตามความสูงของจอ */}
+                        {/* Image Section: Strict Containment using Absolute Positioning */}
                         <div className="relative flex-1 bg-indigo-50 overflow-hidden min-h-0">
                           <img
                             src={lesson.imageUrl || `/หน้าปกบทเรียน/บทที่${num}.png`}
-                            className={`w-full h-full object-cover transition-transform duration-700 ${canEnter ? 'group-hover:scale-110' : 'opacity-40 grayscale blur-[1px]'}`}
+                            className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 ${canEnter ? 'group-hover:scale-110' : 'opacity-40 grayscale blur-[1px]'}`}
                             alt={lesson.title}
                           />
                           <div className="absolute top-4 right-4 p-2 md:p-3 bg-white/90 rounded-2xl shadow-lg z-10 border border-indigo-50">
