@@ -79,21 +79,6 @@ const StudentGamePage = () => {
     }
   }, [gameState, timeLeft]);
 
-  // NEW: Robust Completion Trigger
-  useEffect(() => {
-    if (gameState === 'playing' && game?.settings?.pairs) {
-      const totalPairs = game.settings.pairs.length;
-      const currentMatches = Object.entries(matches).filter(([k, v]) => k === v).length;
-      
-      if (totalPairs > 0 && currentMatches === totalPairs) {
-        // Wait for the final "Correct" feedback to finish before showing results
-        const timer = setTimeout(() => {
-          handleGameComplete();
-        }, 1500);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [matches, game, gameState]);
 
   const startGame = () => {
     setGameState('playing');
@@ -105,66 +90,6 @@ const StudentGamePage = () => {
     toast.success('เริ่มเกม');
   };
 
-  const { refreshProfile } = useAuth();
-
-  const handleGameComplete = async () => {
-    const finalScore = calculateScore();
-    setScore(finalScore);
-    setGameState('result'); // Switch UI immediately
-
-    try {
-      const token = localStorage.getItem('token');
-      const timeSpent = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : null;
-      
-      // Submit to backend to update medals/stars
-      await axios.post(
-        getApiUrl(`/student/games/${gameId}/submit`),
-        {
-          score: finalScore,
-          level: 1,
-          timeSpent,
-          data: { 
-            matches, 
-            mistakes,
-            totalPairs: game?.settings?.pairs?.length || 0 
-          }
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Refresh user profile to update medals in state
-      await refreshProfile();
-    } catch (err) { 
-      console.error('Error submitting game:', err);
-    }
-
-    if (finalScore >= 60) setShowConfetti(true);
-  };
-
-  const getStarRating = (score) => {
-    if (score >= 90) return 3;
-    if (score >= 80) return 2;
-    if (score >= 60) return 1;
-    return 0;
-  };
-
-  const calculateScore = () => {
-    if (!game) return 0;
-    const pairs = game.settings.pairs || [];
-    const totalPairs = pairs.length;
-    if (totalPairs === 0) return 0;
-
-    const correctMatches = Object.entries(matches).filter(([key, value]) => key === value).length;
-    
-    // Logic: Base score from correct matches + Deduction for mistakes
-    // Each mistake deducts 5% (can be adjusted)
-    const baseScore = (correctMatches / totalPairs) * 100;
-    const deduction = mistakes * 5;
-    
-    const finalScore = Math.max(0, Math.round(baseScore - deduction));
-    return finalScore;
-  };
-
   const handleMatch = (item, target) => {
     const isCorrect = item.word === target.word;
     const newMatches = { ...matches, [item.word]: target.word };
@@ -173,6 +98,17 @@ const StudentGamePage = () => {
 
     if (isCorrect) {
       setFeedback({ type: 'correct', message: 'เก่งมาก' });
+      
+      // Check if this was the last pair
+      const totalPairs = game?.settings?.pairs?.length || 0;
+      const currentCorrect = Object.entries(newMatches).filter(([k, v]) => k === v).length;
+      
+      if (currentCorrect === totalPairs && totalPairs > 0) {
+        // Trigger completion after a short delay for the feedback
+        setTimeout(() => {
+          handleGameComplete(newMatches);
+        }, 1200);
+      }
     } else {
       setMistakes(prev => prev + 1);
       setFeedback({ type: 'incorrect', message: 'ลองอีกครั้ง' });
@@ -184,6 +120,64 @@ const StudentGamePage = () => {
         });
       }, 1000);
     }
+  };
+
+  const { refreshProfile } = useAuth();
+
+  const handleGameComplete = async (finalMatches = matches) => {
+    // If we're already in result state, don't do it again
+    if (gameState === 'result') return;
+
+    const finalScore = calculateScore(finalMatches);
+    setScore(finalScore);
+    setGameState('result'); // Switch UI immediately
+    setShowConfetti(finalScore >= 60);
+
+    try {
+      const token = localStorage.getItem('token');
+      const timeSpent = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : null;
+      
+      // Submit to backend
+      await axios.post(
+        getApiUrl(`/student/games/${gameId}/submit`),
+        {
+          score: finalScore,
+          level: 1,
+          timeSpent,
+          data: { 
+            matches: finalMatches, 
+            mistakes,
+            totalPairs: game?.settings?.pairs?.length || 0 
+          }
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // FORCE REFRESH: Update medals in the auth context/global state
+      await refreshProfile();
+    } catch (err) { 
+      console.error('Error submitting game:', err);
+    }
+  };
+
+  const getStarRating = (score) => {
+    if (score >= 90) return 3;
+    if (score >= 80) return 2;
+    if (score >= 60) return 1;
+    return 0;
+  };
+
+  const calculateScore = (currentMatches = matches) => {
+    if (!game) return 0;
+    const pairs = game.settings.pairs || [];
+    const totalPairs = pairs.length;
+    if (totalPairs === 0) return 0;
+
+    const correctMatches = Object.entries(currentMatches).filter(([key, value]) => key === value).length;
+    const baseScore = (correctMatches / totalPairs) * 100;
+    const deduction = mistakes * 5;
+    
+    return Math.max(0, Math.round(baseScore - deduction));
   };
 
   const formatTime = (seconds) => {
