@@ -65,7 +65,7 @@ const StudentLessonsPage = () => {
     } catch (e) { console.error(e); }
   }, []);
 
-  useEffect(() => { if (user?.id) fetchData(); }, [user?.id, fetchData]);
+  useEffect(() => { if (user?.id) fetchData(); }, [user, fetchData]);
 
   const statsList = [
     { Icon: BookOpen, label: "บทเรียน", val: lessons.length, grad: "from-sky-400 to-blue-500", sound: `บทเรียนทั้งหมด ${lessons.length} บท` },
@@ -211,7 +211,6 @@ const StudentLessonsPage = () => {
             </div>
           </div>
 
-          {/* Arrow Right */}
           <motion.button
             whileHover={{ scale: 1.1, x: 5 }} whileTap={{ scale: 0.9 }}
             className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white shadow-2xl flex items-center justify-center disabled:opacity-20 border-4 border-white shrink-0 z-20 cursor-pointer"

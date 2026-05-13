@@ -137,11 +137,14 @@ const StudentGamePage = () => {
       const token = localStorage.getItem('token');
       const timeSpent = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : null;
       
+      const earnedMedals = getStarRating(finalScore);
+
       // Submit to backend
       await axios.post(
         getApiUrl(`/student/games/${gameId}/submit`),
         {
           score: finalScore,
+          earnedMedals, // Send earned medals as requested
           level: 1,
           timeSpent,
           data: { 
