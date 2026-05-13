@@ -1282,7 +1282,7 @@ const ClassroomPage = () => {
                   </button>
 
                   {/* Clear Filters */}
-                  {(studentSearch || studentGender !== 'all' || studentProgressFilter !== 'all' || studentTestStatus !== 'all' || studentScoreLevel !== 'all' || studentGameStatus !== 'all' || studentActivityStatus !== 'all') && (
+                  {(studentSearch || studentGender !== 'all' || studentProgressFilter !== 'all' || studentTestStatus !== 'all' || studentScoreLevel !== 'all' || studentGameStatus !== 'all') && (
                     <button
                       onClick={clearFilters}
                       className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 hover:bg-red-50 rounded transition"
