@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { X } from 'lucide-react';
 
-const CreateClassroomModal = ({ onClose, onSubmit, isLoading, initialData, isEditMode = false }) => {
+const CreateClassroomModal = ({ onClose, onSubmit, isLoading, initialData, isEditMode = false, isGenerating = false }) => {
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: initialData || {
       name: '',
@@ -103,7 +103,7 @@ const CreateClassroomModal = ({ onClose, onSubmit, isLoading, initialData, isEdi
                 {isLoading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    กำลังสร้าง
+                    {isGenerating ? 'กำลังเตรียมเนื้อหา...' : (isEditMode ? 'กำลังบันทึก' : 'กำลังสร้าง')}
                   </div>
                 ) : (
                   isEditMode ? 'บันทึกการแก้ไข' : 'สร้างห้องเรียน'

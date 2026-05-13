@@ -134,9 +134,12 @@ const TeacherDashboard = () => {
 
   // Create classroom function
   const createClassroom = async (classroomData) => {
+    let createdClassroomId = null;
     try {
       setIsCreating(true);
       const token = localStorage.getItem('token');
+      
+      // Step 1: Create Classroom
       const response = await axios.post(getApiUrl('/teacher/classrooms'), {
         name: classroomData.name,
         description: classroomData.description
@@ -147,18 +150,32 @@ const TeacherDashboard = () => {
       });
 
       if (response.data.success) {
+        createdClassroomId = response.data.data.classroom.id || response.data.data.classroom._id;
+        
+        // Step 2: Generate Lessons (Sequential for Vercel stability)
+        setIsGeneratingLessons(true);
+        toast.loading('กำลังสร้างเนื้อหาบทเรียนอัตโนมัติ...', { id: 'gen-lessons' });
+        
+        await axios.post(getApiUrl(`/teacher/classrooms/${createdClassroomId}/lessons/generate`), {}, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        toast.success('สร้างห้องเรียนและเนื้อหาสำเร็จ', { id: 'gen-lessons' });
+        
         // Refresh classrooms data
         await fetchClassrooms();
         setShowCreateModal(false);
-        toast.success('สร้างห้องเรียนสำเร็จ');
       } else {
         throw new Error(response.data.message || 'Failed to create classroom');
       }
     } catch (error) {
-      console.error('Error creating classroom:', error);
-      toast.error(error.response?.data?.message || 'เกิดข้อผิดพลาดในการสร้างห้องเรียน');
+      console.error('Error creating classroom flow:', error);
+      toast.error(error.response?.data?.message || 'เกิดข้อผิดพลาดในการสร้างห้องเรียน', { id: 'gen-lessons' });
     } finally {
       setIsCreating(false);
+      setIsGeneratingLessons(false);
     }
   };
 
@@ -703,7 +720,8 @@ const TeacherDashboard = () => {
           <CreateClassroomModal
             onClose={() => setShowCreateModal(false)}
             onSubmit={handleCreateClassroom}
-            isLoading={isCreating}
+            isLoading={isCreating || isGeneratingLessons}
+            isGenerating={isGeneratingLessons}
           />
         )
       }
