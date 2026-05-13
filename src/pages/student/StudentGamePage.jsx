@@ -159,7 +159,7 @@ const StudentGamePage = () => {
       // FORCE REFRESH: Update medals in the auth context/global state
       await refreshProfile();
     } catch (err) { 
-      console.error('Error submitting game:', err);
+      console.error('Submit Error:', err.response?.data || err.message);
     }
   };
 
