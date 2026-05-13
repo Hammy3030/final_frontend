@@ -293,8 +293,10 @@ const ClassroomPage = () => {
       if (response.data.success) {
         toast.success(`นำเข้านักเรียน ${validStudents.length} คนสำเร็จ`);
         setShowPdfPreviewModal(false);
+        // Invalidate and refetch immediately
         queryClient.invalidateQueries(['classroom', classroomId]);
         queryClient.invalidateQueries(['classroom-students', classroomId]);
+        queryClient.refetchQueries(['classroom-students', classroomId]);
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
@@ -333,8 +335,10 @@ const ClassroomPage = () => {
     },
     {
       onSuccess: () => {
+        // Invalidate and refetch immediately
         queryClient.invalidateQueries(['classroom', classroomId]);
         queryClient.invalidateQueries(['classroom-students', classroomId]);
+        queryClient.refetchQueries(['classroom-students', classroomId]);
         setShowAddStudentsModal(false);
         toast.success('เพิ่มนักเรียนสำเร็จ');
       },
@@ -359,8 +363,10 @@ const ClassroomPage = () => {
     },
     {
       onSuccess: () => {
+        // Invalidate and refetch immediately
         queryClient.invalidateQueries(['classroom', classroomId]);
         queryClient.invalidateQueries(['classroom-students', classroomId]);
+        queryClient.refetchQueries(['classroom-students', classroomId]);
         toast.success('ลบนักเรียนสำเร็จ');
       },
       onError: (error) => {
@@ -2104,7 +2110,10 @@ const ClassroomPage = () => {
           isOpen={showAddStudentsModal}
           onClose={() => setShowAddStudentsModal(false)}
           onSuccess={() => {
+            // Invalidate and refetch immediately
             queryClient.invalidateQueries(['classroom', classroomId]);
+            queryClient.invalidateQueries(['classroom-students', classroomId]);
+            queryClient.refetchQueries(['classroom-students', classroomId]);
           }}
           classroomId={classroomId}
         />
