@@ -314,44 +314,142 @@ const StudentTestPage = () => {
 
               {/* Media and Options Row */}
               <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-6 overflow-hidden">
-                {/* Media Section - Scales to fit */}
-                {currentQuestion.imageUrl && !currentQuestion.imageUrl.startsWith('emoji:') && (
-                  <div className="flex-1 min-h-0 flex items-center justify-center bg-indigo-50/30 rounded-[2rem] border-2 border-indigo-50 overflow-hidden p-4">
-                    <img src={currentQuestion.imageUrl} alt="Question" className="max-w-full max-h-full object-contain drop-shadow-2xl" />
+                {!currentQuestion.isMatching ? (
+                  <>
+                    {/* Media Section - Scales to fit */}
+                    {currentQuestion.imageUrl && !currentQuestion.imageUrl.startsWith('emoji:') && (
+                      <div className="flex-1 min-h-0 flex items-center justify-center bg-indigo-50/30 rounded-[2rem] border-2 border-indigo-50 overflow-hidden p-4">
+                        <img src={currentQuestion.imageUrl} alt="Question" className="max-w-full max-h-full object-contain drop-shadow-2xl" />
+                      </div>
+                    )}
+
+                    {/* Options Section - Scales to fit */}
+                    <div className="flex-1 min-h-0 flex flex-col overflow-y-auto lg:overflow-hidden scrollbar-hide">
+                      <div className={`grid ${currentQuestion.imageUrl ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2'} gap-3 sm:gap-4 h-full content-center`}>
+                        {currentQuestion.options.map((option, index) => {
+                          const questionId = currentQuestion._id || currentQuestion.id;
+                          const isSelected = currentQuestion.isMultipleChoice
+                            ? Array.isArray(answers[questionId]) && answers[questionId].includes(index)
+                            : answers[questionId] === index;
+                          const optionImage = currentQuestion.imageOptions && currentQuestion.imageOptions[index];
+                          const displayText = option.split('→').pop().trim();
+                          const colors = ['border-rose-200 bg-rose-50/40', 'border-amber-200 bg-amber-50/40', 'border-emerald-200 bg-emerald-50/40', 'border-sky-200 bg-sky-50/40'];
+
+                          return (
+                            <motion.div key={index} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => {
+                              if (currentQuestion.isMultipleChoice) {
+                                const curr = Array.isArray(answers[questionId]) ? answers[questionId] : [];
+                                handleAnswerSelect(questionId, curr.includes(index) ? curr.filter(i => i !== index) : [...curr, index]);
+                              } else {
+                                handleAnswerSelect(questionId, index);
+                              }
+                            }} className={`p-3 rounded-3xl border-4 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 min-h-[100px] sm:min-h-[140px] ${isSelected ? 'border-indigo-500 bg-indigo-100 shadow-lg' : `${colors[index % colors.length]} hover:border-indigo-300`}`}>
+                              {optionImage && <img src={optionImage} className="h-16 sm:h-24 object-contain mb-1" />}
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xl sm:text-2xl font-black text-center ${isSelected ? 'text-indigo-900' : 'text-gray-700'}`}>{displayText}</span>
+                                <AudioButton text={displayText} variant="mini" iconSize={16} className="shrink-0" onClick={e => e.stopPropagation()} />
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  /* Matching Question - Reverted to Original Left-Right UI */
+                  <div className="flex-1 flex flex-col gap-4 min-h-0 overflow-hidden">
+                    <div className="flex items-center justify-center gap-3 bg-indigo-50/50 px-6 py-2 rounded-full border border-indigo-100 shadow-sm shrink-0 w-fit mx-auto">
+                      <p className="text-base sm:text-xl font-black text-indigo-600">แตะที่ตัวเลือกฝั่งซ้าย แล้วเลือกคู่ที่ถูกต้อง</p>
+                      <AudioButton text="แตะที่ตัวเลือกฝั่งซ้าย แล้วเลือกคู่ที่ถูกต้อง" variant="mini" iconSize={20} />
+                    </div>
+
+                    <div className="flex-1 min-h-0 overflow-y-auto pr-2 space-y-4">
+                      {currentQuestion.matchingPairs && currentQuestion.matchingPairs.map((pair, pairIdx) => {
+                        const questionId = currentQuestion._id || currentQuestion.id;
+                        const userMatches = answers[questionId] || {};
+                        const selectedOption = userMatches[pairIdx];
+                        const isActive = selectedPair === pairIdx;
+                        const matchedImage = currentQuestion.imageOptions?.[selectedOption];
+
+                        return (
+                          <div key={pairIdx} className="flex items-center gap-4">
+                            {/* Left: Item button */}
+                            <motion.button
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => setSelectedPair(isActive ? null : pairIdx)}
+                              className={`w-20 h-20 sm:w-24 sm:h-24 rounded-3xl border-4 flex items-center justify-center text-2xl sm:text-4xl font-black shrink-0 transition-all ${isActive
+                                ? 'border-indigo-500 bg-indigo-500 text-white shadow-xl scale-105'
+                                : selectedOption !== undefined
+                                  ? 'border-blue-400 bg-blue-50 text-blue-700 shadow-lg'
+                                  : 'border-gray-200 bg-white text-indigo-600 hover:border-indigo-300 shadow-md'
+                                }`}
+                            >
+                              {pair.left}
+                            </motion.button>
+
+                            <span className="text-gray-300 text-2xl shrink-0">→</span>
+
+                            {/* Right: Option choices or matched result */}
+                            {selectedOption !== undefined ? (
+                              <div className="flex-1 flex items-center gap-4 bg-blue-50 border-4 border-blue-200 rounded-3xl px-6 py-4 shadow-inner min-h-[80px] sm:min-h-[96px]">
+                                {matchedImage && (
+                                  <img src={matchedImage} alt="" className="w-12 h-12 sm:w-16 sm:h-16 object-contain" />
+                                )}
+                                <span className="text-lg sm:text-2xl font-black text-blue-700">{currentQuestion.options?.[selectedOption]}</span>
+                                <button
+                                  onClick={() => {
+                                    const newMatches = { ...userMatches };
+                                    delete newMatches[pairIdx];
+                                    handleAnswerSelect(questionId, newMatches);
+                                  }}
+                                  className="ml-auto p-2 text-red-400 hover:text-red-600 transition-colors"
+                                >
+                                  <Trash2 size={24} />
+                                </button>
+                              </div>
+                            ) : isActive ? (
+                              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {currentQuestion.options.map((option, index) => {
+                                  const isUsed = Object.values(userMatches).includes(index);
+                                  const optionImage = currentQuestion.imageOptions?.[index];
+
+                                  return (
+                                    <motion.button
+                                      key={index}
+                                      whileHover={!isUsed ? { scale: 1.02 } : {}}
+                                      whileTap={!isUsed ? { scale: 0.95 } : {}}
+                                      onClick={() => {
+                                        if (!isUsed) {
+                                          const newMatches = { ...userMatches, [pairIdx]: index };
+                                          handleAnswerSelect(questionId, newMatches);
+                                          setSelectedPair(null);
+                                        }
+                                      }}
+                                      className={`flex items-center gap-3 px-4 py-2 rounded-2xl border-2 transition-all text-left ${isUsed
+                                        ? 'border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed'
+                                        : 'border-indigo-100 bg-white hover:border-indigo-500 hover:bg-indigo-50 shadow-sm'
+                                        }`}
+                                    >
+                                      {optionImage && <img src={optionImage} alt="" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />}
+                                      <span className="text-sm sm:text-base font-bold text-gray-700 truncate">{option}</span>
+                                    </motion.button>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setSelectedPair(pairIdx)}
+                                className="flex-1 py-4 border-4 border-dashed border-gray-200 rounded-3xl text-gray-400 font-black hover:border-indigo-300 hover:text-indigo-400 transition-all text-lg sm:text-xl"
+                              >
+                                แตะเพื่อเลือก
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
-
-                {/* Options Section - Scales to fit */}
-                <div className="flex-1 min-h-0 flex flex-col overflow-y-auto lg:overflow-hidden scrollbar-hide">
-                  <div className={`grid ${currentQuestion.imageUrl ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2'} gap-3 sm:gap-4 h-full content-center`}>
-                    {currentQuestion.options.map((option, index) => {
-                      const questionId = currentQuestion._id || currentQuestion.id;
-                      const isSelected = currentQuestion.isMultipleChoice
-                        ? Array.isArray(answers[questionId]) && answers[questionId].includes(index)
-                        : answers[questionId] === index;
-                      const optionImage = currentQuestion.imageOptions && currentQuestion.imageOptions[index];
-                      const displayText = option.split('→').pop().trim();
-                      const colors = ['border-rose-200 bg-rose-50/40', 'border-amber-200 bg-amber-50/40', 'border-emerald-200 bg-emerald-50/40', 'border-sky-200 bg-sky-50/40'];
-
-                      return (
-                        <motion.div key={index} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => {
-                          if (currentQuestion.isMultipleChoice) {
-                            const curr = Array.isArray(answers[questionId]) ? answers[questionId] : [];
-                            handleAnswerSelect(questionId, curr.includes(index) ? curr.filter(i => i !== index) : [...curr, index]);
-                          } else {
-                            handleAnswerSelect(questionId, index);
-                          }
-                        }} className={`p-3 rounded-3xl border-4 transition-all cursor-pointer flex flex-col items-center justify-center gap-2 min-h-[100px] sm:min-h-[140px] ${isSelected ? 'border-indigo-500 bg-indigo-100 shadow-lg' : `${colors[index % colors.length]} hover:border-indigo-300`}`}>
-                          {optionImage && <img src={optionImage} className="h-16 sm:h-24 object-contain mb-1" />}
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xl sm:text-2xl font-black text-center ${isSelected ? 'text-indigo-900' : 'text-gray-700'}`}>{displayText}</span>
-                            <AudioButton text={displayText} variant="mini" iconSize={16} className="shrink-0" onClick={e => e.stopPropagation()} />
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
             </div>
 
