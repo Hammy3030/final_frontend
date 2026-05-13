@@ -105,24 +105,32 @@ const StudentGamePage = () => {
   };
 
   const handleGameComplete = async () => {
-    setGameState('result');
     const finalScore = calculateScore();
     setScore(finalScore);
+    setGameState('result'); // Switch UI immediately
 
     try {
       const token = localStorage.getItem('token');
       const timeSpent = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : null;
+      
+      // Submit to backend to update medals/stars
       await axios.post(
         getApiUrl(`/student/games/${gameId}/submit`),
         {
           score: finalScore,
           level: 1,
           timeSpent,
-          data: { matches, totalPairs: game?.settings?.pairs?.length || 0 }
+          data: { 
+            matches, 
+            mistakes,
+            totalPairs: game?.settings?.pairs?.length || 0 
+          }
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-    } catch (err) { console.error('Error submitting game:', err); }
+    } catch (err) { 
+      console.error('Error submitting game:', err);
+    }
 
     if (finalScore >= 60) setShowConfetti(true);
   };
@@ -287,14 +295,23 @@ const StudentGamePage = () => {
                       {calculateScore() >= 90 ? '🏆' : calculateScore() >= 60 ? '⭐' : '💪'}
                     </div>
 
-                    <div className="flex gap-2 mb-6">
+                    <div className="flex gap-4 mb-6">
                       {[1, 2, 3].map((s) => (
-                        <Star
+                        <motion.div
                           key={s}
-                          size={48}
-                          fill={s <= getStarRating(calculateScore()) ? "currentColor" : "none"}
-                          className={`${s <= getStarRating(calculateScore()) ? 'text-yellow-200' : 'text-white/30'} drop-shadow-md`}
-                        />
+                          initial={{ scale: 0, rotate: -20 }}
+                          animate={{ 
+                            scale: s <= getStarRating(calculateScore()) ? 1.2 : 1,
+                            rotate: 0 
+                          }}
+                          transition={{ delay: 0.5 + (s * 0.2), type: "spring" }}
+                        >
+                          <Medal
+                            size={64}
+                            fill={s <= getStarRating(calculateScore()) ? "#fbbf24" : "none"}
+                            className={`${s <= getStarRating(calculateScore()) ? 'text-yellow-400' : 'text-white/30'} drop-shadow-xl`}
+                          />
+                        </motion.div>
                       ))}
                     </div>
 
