@@ -37,6 +37,7 @@ const StudentGamePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [gameStartTime, setGameStartTime] = useState(null);
   const [feedback, setFeedback] = useState(null);
+  const [mistakes, setMistakes] = useState(0);
   const closeFeedback = useCallback(() => setFeedback(null), []);
 
   useEffect(() => {
@@ -77,10 +78,27 @@ const StudentGamePage = () => {
     }
   }, [gameState, timeLeft]);
 
+  // NEW: Robust Completion Trigger
+  useEffect(() => {
+    if (gameState === 'playing' && game?.settings?.pairs) {
+      const totalPairs = game.settings.pairs.length;
+      const currentMatches = Object.entries(matches).filter(([k, v]) => k === v).length;
+      
+      if (totalPairs > 0 && currentMatches === totalPairs) {
+        // Wait for the final "Correct" feedback to finish before showing results
+        const timer = setTimeout(() => {
+          handleGameComplete();
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [matches, game, gameState]);
+
   const startGame = () => {
     setGameState('playing');
     setScore(0);
     setMatches({});
+    setMistakes(0);
     setTimeLeft(300);
     setGameStartTime(Date.now());
     toast.success('เริ่มเกม');
@@ -119,8 +137,18 @@ const StudentGamePage = () => {
   const calculateScore = () => {
     if (!game) return 0;
     const pairs = game.settings.pairs || [];
+    const totalPairs = pairs.length;
+    if (totalPairs === 0) return 0;
+
     const correctMatches = Object.entries(matches).filter(([key, value]) => key === value).length;
-    return pairs.length > 0 ? Math.round((correctMatches / pairs.length) * 100) : 0;
+    
+    // Logic: Base score from correct matches + Deduction for mistakes
+    // Each mistake deducts 5% (can be adjusted)
+    const baseScore = (correctMatches / totalPairs) * 100;
+    const deduction = mistakes * 5;
+    
+    const finalScore = Math.max(0, Math.round(baseScore - deduction));
+    return finalScore;
   };
 
   const handleMatch = (item, target) => {
@@ -131,15 +159,8 @@ const StudentGamePage = () => {
 
     if (isCorrect) {
       setFeedback({ type: 'correct', message: 'เก่งมาก' });
-      
-      // Check for completion after feedback
-      const totalPairs = game?.settings?.pairs?.length || 0;
-      const correctMatchesCount = Object.entries(newMatches).filter(([k, v]) => k === v).length;
-      
-      if (correctMatchesCount === totalPairs) {
-        setTimeout(handleGameComplete, 1500);
-      }
     } else {
+      setMistakes(prev => prev + 1);
       setFeedback({ type: 'incorrect', message: 'ลองอีกครั้ง' });
       setTimeout(() => {
         setMatches(prev => {
