@@ -106,7 +106,14 @@ const StudentGamePage = () => {
       );
     } catch (err) { console.error('Error submitting game:', err); }
 
-    if (finalScore >= 80) setShowConfetti(true);
+    if (finalScore >= 60) setShowConfetti(true);
+  };
+
+  const getStarRating = (score) => {
+    if (score >= 90) return 3;
+    if (score >= 80) return 2;
+    if (score >= 60) return 1;
+    return 0;
   };
 
   const calculateScore = () => {
@@ -117,12 +124,21 @@ const StudentGamePage = () => {
   };
 
   const handleMatch = (item, target) => {
+    const isCorrect = item.word === target.word;
     const newMatches = { ...matches, [item.word]: target.word };
     setMatches(newMatches);
     setSelectedItem(null);
 
-    if (item.word === target.word) {
+    if (isCorrect) {
       setFeedback({ type: 'correct', message: 'เก่งมาก' });
+      
+      // Check for completion after feedback
+      const totalPairs = game?.settings?.pairs?.length || 0;
+      const correctMatchesCount = Object.entries(newMatches).filter(([k, v]) => k === v).length;
+      
+      if (correctMatchesCount === totalPairs) {
+        setTimeout(handleGameComplete, 1500);
+      }
     } else {
       setFeedback({ type: 'incorrect', message: 'ลองอีกครั้ง' });
       setTimeout(() => {
@@ -240,23 +256,57 @@ const StudentGamePage = () => {
 
           {gameState === 'result' && (
             <motion.div key="result" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex items-center justify-center p-4">
-               <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden text-center">
-                  <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-12 text-white flex flex-col items-center">
-                    <div className="text-8xl mb-6 drop-shadow-xl">🏆</div>
+               <div className="bg-white rounded-[3.5rem] shadow-2xl w-full max-w-xl overflow-hidden text-center border-8 border-white">
+                  <div className={`p-10 flex flex-col items-center ${calculateScore() >= 60 ? 'bg-gradient-to-br from-yellow-400 via-orange-400 to-yellow-500' : 'bg-gradient-to-br from-blue-400 to-indigo-500'} text-white relative`}>
+                    <div className="absolute top-4 right-4 animate-pulse">
+                      {calculateScore() >= 90 ? <Trophy size={48} className="text-white/40" /> : <Star size={48} className="text-white/40" />}
+                    </div>
+                    
+                    <div className="text-8xl mb-4 drop-shadow-2xl animate-bounce">
+                      {calculateScore() >= 90 ? '🏆' : calculateScore() >= 60 ? '⭐' : '💪'}
+                    </div>
+
+                    <div className="flex gap-2 mb-6">
+                      {[1, 2, 3].map((s) => (
+                        <Star
+                          key={s}
+                          size={48}
+                          fill={s <= getStarRating(calculateScore()) ? "currentColor" : "none"}
+                          className={`${s <= getStarRating(calculateScore()) ? 'text-yellow-200' : 'text-white/30'} drop-shadow-md`}
+                        />
+                      ))}
+                    </div>
+
+                    <h2 className="text-4xl font-black mb-2 drop-shadow-md">
+                      {calculateScore() >= 90 ? 'ยอดเยี่ยมที่สุด!' : calculateScore() >= 60 ? 'เก่งมากเลยจ้า!' : 'พยายามอีกนิดนะ!'}
+                    </h2>
+                    
                     <AudioButton 
-                      text="เย้! เก่งมากจ้า เล่นเกมเสร็จแล้วนะ" 
+                      text={calculateScore() >= 80 ? "ยอดเยี่ยมไปเลยจ้า เก่งที่สุดเลย" : calculateScore() >= 60 ? "เก่งมากเลยจ้า ทำได้ดีมาก" : "พยายามอีกนิดนะจ๊ะ ลองใหม่อีกรอบนะ"} 
                       variant="large" 
                       iconSize={48} 
-                      className="mb-6 scale-110"
+                      className="mb-4 bg-white/20 hover:bg-white/40 border-none text-white"
                       autoPlay={true}
                     />
-                    <p className="text-xl font-bold opacity-90 text-white">ทำคะแนนได้ {calculateScore()}%</p>
+                    
+                    <div className="bg-white/20 backdrop-blur-md rounded-2xl px-6 py-2 border border-white/30">
+                      <p className="text-2xl font-black">คะแนน {calculateScore()}%</p>
+                    </div>
                   </div>
-                  <div className="p-8 space-y-4">
-                    <button onClick={() => navigate('/dashboard/student/lessons')} className="w-full py-5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-3xl font-black text-xl shadow-xl shadow-purple-100 flex items-center justify-center gap-2">
-                       📖 กลับหน้าหลัก
+
+                  <div className="p-8 grid grid-cols-2 gap-4">
+                    <button 
+                      onClick={startGame} 
+                      className="py-5 bg-indigo-50 text-indigo-600 rounded-3xl font-black text-xl hover:bg-indigo-100 transition shadow-sm flex items-center justify-center gap-2 border-2 border-indigo-100"
+                    >
+                      <RotateCcw size={24} /> เล่นอีกครั้ง
                     </button>
-                    <button onClick={startGame} className="w-full py-3 text-gray-500 font-bold hover:text-purple-600 transition">เล่นอีกครั้ง</button>
+                    <button 
+                      onClick={() => navigate('/dashboard/student/lessons')} 
+                      className="py-5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-3xl font-black text-xl shadow-xl shadow-purple-100 flex items-center justify-center gap-2"
+                    >
+                      📖 กลับหน้าหลัก
+                    </button>
                   </div>
                </div>
             </motion.div>
