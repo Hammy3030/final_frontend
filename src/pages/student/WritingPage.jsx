@@ -48,6 +48,19 @@ const WritingPage = () => {
   const [score, setScore] = useState(0);
   const [aiExplanation, setAiExplanation] = useState('');
   const [guideLoaded, setGuideLoaded] = useState(false);
+  const [strokes, setStrokes] = useState([]); // Array of points {x, y, t}
+  const [waypointsPassed, setWaypointsPassed] = useState([]); // Tracks which waypoints were hit
+  const [lastGuideRect, setLastGuideRect] = useState({ offsetX: 0, offsetY: 0, drawW: 0, drawH: 0 });
+  const [firstStrokePoint, setFirstStrokePoint] = useState(null); // The very first point touched
+
+  // ── Predefined waypoints for characters (Normalized 0-1) ──
+  // These should be defined for each character to ensure correct stroke order
+  const CHARACTER_WAYPOINTS = useMemo(() => ({
+    'ก': [{ x: 0.2, y: 0.9 }, { x: 0.2, y: 0.2 }, { x: 0.35, y: 0.15 }, { x: 0.5, y: 0.25 }, { x: 0.8, y: 0.2 }, { x: 0.8, y: 0.9 }],
+    'ข': [{ x: 0.45, y: 0.25 }, { x: 0.35, y: 0.15 }, { x: 0.25, y: 0.25 }, { x: 0.35, y: 0.35 }, { x: 0.45, y: 0.25 }, { x: 0.25, y: 0.85 }, { x: 0.75, y: 0.85 }, { x: 0.75, y: 0.65 }],
+    'ง': [{ x: 0.65, y: 0.25 }, { x: 0.55, y: 0.15 }, { x: 0.45, y: 0.25 }, { x: 0.55, y: 0.35 }, { x: 0.65, y: 0.25 }, { x: 0.65, y: 0.55 }, { x: 0.35, y: 0.85 }],
+    // Add more waypoints for other characters here...
+  }), []);
 
   const particles = useMemo(() =>
     Array.from({ length: 10 }, (_, i) => ({
@@ -80,6 +93,7 @@ const WritingPage = () => {
     ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
     ctx.globalAlpha = 1.0;
 
+    setLastGuideRect({ offsetX, offsetY, drawW, drawH });
     ctx.restore();
   };
 
@@ -115,21 +129,93 @@ const WritingPage = () => {
     setIsDrawing(true);
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const { x, y } = getPos(e, canvas.getBoundingClientRect());
+    const rect = canvas.getBoundingClientRect();
+    const { x, y } = getPos(e, rect);
+    
+    // Track the very first point of the very first stroke for strict direction check
+    if (!firstStrokePoint && !isCanvasEmpty()) {
+        // If it was empty but now we start, this is the first point
+    }
+    // Actually, it's easier to check if strokes array is empty or if we have a state
+    if (!firstStrokePoint) {
+      setFirstStrokePoint({ x, y });
+    }
+
+    setStrokes([{ x, y, t: Date.now() }]);
+    setWaypointsPassed([]);
+    
     ctx.beginPath();
     ctx.moveTo(x, y);
+    
+    checkWaypoint(x, y);
   };
 
   const draw = (e) => {
     if (!isDrawing) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const { x, y } = getPos(e, canvas.getBoundingClientRect());
+    const rect = canvas.getBoundingClientRect();
+    const { x, y } = getPos(e, rect);
+    
+    setStrokes(prev => [...prev, { x, y, t: Date.now() }]);
     ctx.lineTo(x, y);
     ctx.stroke();
+    
+    checkWaypoint(x, y);
   };
 
-  const stopDrawing = () => setIsDrawing(false);
+  const checkWaypoint = (x, y) => {
+    const waypoints = CHARACTER_WAYPOINTS[currentWord];
+    if (!waypoints) return;
+
+    const { offsetX, offsetY, drawW, drawH } = lastGuideRect;
+    
+    // Convert canvas pixel to normalized 0-1 coordinate relative to the guide image
+    const nx = (x - offsetX) / drawW;
+    const ny = (y - offsetY) / drawH;
+
+    const threshold = 0.15; // Tolerance radius (15% of character size)
+
+    // Check if we hit the "next" expected waypoint
+    const nextIdx = waypointsPassed.length;
+    if (nextIdx < waypoints.length) {
+      const wp = waypoints[nextIdx];
+      const dist = Math.sqrt(Math.pow(nx - wp.x, 2) + Math.pow(ny - wp.y, 2));
+      
+      if (dist < threshold) {
+        setWaypointsPassed(prev => [...prev, nextIdx]);
+      }
+    }
+  };
+
+  const stopDrawing = () => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+
+    // Validate direction/order if waypoints exist for this character
+    const waypoints = CHARACTER_WAYPOINTS[currentWord];
+    if (waypoints && waypoints.length > 0) {
+      const lastPassed = waypointsPassed.length;
+      
+      // If they started at the wrong place (didn't pass waypoint 0 early)
+      // or finished without passing most waypoints
+      if (waypointsPassed.length < waypoints.length * 0.5) {
+         // They might be drawing in wrong order or skipping parts
+         // Check specifically for reverse direction (starting near end)
+         const { offsetX, offsetY, drawW, drawH } = lastGuideRect;
+         const startX = (strokes[0].x - offsetX) / drawW;
+         const startY = (strokes[0].y - offsetY) / drawH;
+         const endWP = waypoints[waypoints.length - 1];
+         const distToEnd = Math.sqrt(Math.pow(startX - endWP.x, 2) + Math.pow(startY - endWP.y, 2));
+         
+         if (distToEnd < 0.2) {
+           toast.error('ลองใหม่นะ ลากจากหัวไปหางจ้า', { icon: '🔄' });
+           speakText('ลองใหม่นะ ลากจากหัวไปหางจ้า');
+           clearCanvas();
+         }
+      }
+    }
+  };
 
   const clearCanvas = () => {
     const canvas = canvasRef.current;
@@ -140,6 +226,9 @@ const WritingPage = () => {
     setDetectedText('');
     setIsCorrect(null);
     setAiExplanation('');
+    setStrokes([]);
+    setWaypointsPassed([]);
+    setFirstStrokePoint(null);
   };
 
   const isCanvasEmpty = () => {
@@ -158,6 +247,31 @@ const WritingPage = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     if (isCanvasEmpty()) { toast.error('กรุณาเขียนอักษรบนกระดานก่อนตรวจสอบ'); return; }
+
+    // ── 1. Strict Start Point (Head) Check ──
+    const waypoints = CHARACTER_WAYPOINTS[currentWord];
+    if (waypoints && waypoints.length > 0 && firstStrokePoint) {
+      const { offsetX, offsetY, drawW, drawH } = lastGuideRect;
+      const nx = (firstStrokePoint.x - offsetX) / drawW;
+      const ny = (firstStrokePoint.y - offsetY) / drawH;
+      const startWP = waypoints[0];
+      
+      const dist = Math.sqrt(Math.pow(nx - startWP.x, 2) + Math.pow(ny - startWP.y, 2));
+      
+      if (dist > 0.25) { // If first touch is more than 25% away from head
+        toast.error('หนูวาดผิดทางจ้า ลองเริ่มม้วนจากหัวกลมๆ ก่อนนะ', { icon: '⭕' });
+        speakText('หนูวาดผิดทางจ้า ลองเริ่มม้วนจากหัวกลมๆ ก่อนนะ');
+        clearCanvas();
+        return;
+      }
+    }
+
+    // ── 2. Sequence Check (Waypoints hit in order) ──
+    if (waypoints && waypointsPassed.length < waypoints.length * 0.7) {
+      toast.error('กรุณาลากเส้นให้ครบถ้วนและถูกทิศทางนะจ๊ะ');
+      speakText('กรุณาลากเส้นให้ครบถ้วนและถูกทิศทางนะจ๊ะ');
+      return;
+    }
 
     setIsChecking(true);
     setAiExplanation('');
