@@ -190,19 +190,14 @@ const StudentGamePage = () => {
                       <h3 className="text-4xl font-black mb-2">{game.title}</h3>
                       <div className="w-16 h-1.5 bg-white/30 rounded-full" />
                     </div>
-                    <div className="p-10 flex flex-col items-center justify-center gap-8 md:w-1/2">
-                      <div className="space-y-4 text-center">
-                        <p className="text-2xl font-black text-gray-800 leading-tight">
-                          เกมนี้ต้องจับคู่<br />ภาพที่เหมือนกันนะ
-                        </p>
-                        <AudioButton 
-                          text="เกมนี้ต้องจับคู่ภาพที่เหมือนกันนะจ๊ะ เด็กๆ เลือกคำศัพท์ฝั่งซ้าย แล้วหาภาพที่คู่กันฝั่งขวาให้เจอเลย" 
-                          variant="large" 
-                          iconSize={48} 
-                          className="mx-auto bg-purple-500 text-white shadow-lg shadow-purple-200"
-                          autoPlay={true}
-                        />
-                      </div>
+                    <div className="p-10 flex flex-col items-center justify-center gap-10 md:w-1/2">
+                      <AudioButton 
+                        text="เกมนี้ต้องจับคู่ภาพที่เหมือนกันนะจ๊ะ" 
+                        variant="large" 
+                        iconSize={64} 
+                        className="bg-purple-500 text-white shadow-2xl scale-125 hover:scale-150 transition-transform"
+                        autoPlay={true}
+                      />
                       <motion.button 
                         whileHover={{ scale: 1.05, y: -5 }} 
                         whileTap={{ scale: 0.95 }} 
@@ -229,16 +224,15 @@ const StudentGamePage = () => {
             <motion.div key="result" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex items-center justify-center p-4">
                <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden text-center">
                   <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-12 text-white flex flex-col items-center">
-                    <div className="text-8xl mb-4 drop-shadow-xl">🏆</div>
-                    <h2 className="text-4xl font-black mb-4">เก่งที่สุดเลย!</h2>
+                    <div className="text-8xl mb-6 drop-shadow-xl">🏆</div>
                     <AudioButton 
-                      text="เก่งที่สุดเลยจ้า เล่นเกมเสร็จแล้วนะ สนุกไหมเอ่ย" 
+                      text="เย้! เก่งมากจ้า เล่นเกมเสร็จแล้วนะ" 
                       variant="large" 
-                      iconSize={32} 
-                      className="bg-white/20 text-white border-white/30 mb-2"
+                      iconSize={48} 
+                      className="bg-white/20 text-white border-white/30 mb-6 scale-110"
                       autoPlay={true}
                     />
-                    <p className="text-xl font-bold opacity-90">ทำคะแนนได้ {calculateScore()}%</p>
+                    <p className="text-xl font-bold opacity-90 text-white">ทำคะแนนได้ {calculateScore()}%</p>
                   </div>
                   <div className="p-8 space-y-4">
                     <button onClick={() => navigate('/dashboard/student/lessons')} className="w-full py-5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-3xl font-black text-xl shadow-xl shadow-purple-100 flex items-center justify-center gap-2">
