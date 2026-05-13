@@ -13,7 +13,8 @@ import {
   Medal,
   ChevronRight,
   Star,
-  Image as ImageIcon
+  Image as ImageIcon,
+  HelpCircle
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -158,7 +159,23 @@ const StudentGamePage = () => {
         <button onClick={() => navigate('/dashboard/student')} className="flex items-center gap-2 text-gray-500 font-black hover:text-purple-600 transition shrink-0">
           <ArrowLeft size={24} /> <span className="hidden sm:inline">กลับ</span>
         </button>
-        {gameState === 'playing' && (
+        
+        <div className="flex-1 flex justify-center px-4">
+          <div className="flex items-center gap-3 bg-indigo-50 px-6 py-2 rounded-2xl border-2 border-indigo-100 shadow-sm max-w-[600px]">
+             <h1 className="text-lg md:text-xl font-black text-indigo-900 leading-tight">
+               {game.title}
+             </h1>
+             <button 
+               onClick={() => speak("แตะคำศัพท์ฝั่งซ้าย แล้วไปแตะรูปภาพฝั่งขวาที่ตรงกันนะจ๊ะ")} 
+               className="p-2 bg-white rounded-full shadow-sm hover:bg-indigo-100 text-indigo-500 transition-colors shrink-0"
+               title="วิธีเล่น"
+             >
+               <HelpCircle size={24} />
+             </button>
+          </div>
+        </div>
+
+        {gameState === 'playing' ? (
           <div className="flex items-center gap-4 sm:gap-8">
              <div className="flex items-center gap-2 bg-purple-50 px-3 py-1.5 rounded-2xl border-2 border-purple-100">
                 <Target className="text-purple-600" size={20} />
@@ -169,8 +186,9 @@ const StudentGamePage = () => {
                 <span className="text-xl font-black text-blue-700">{formatTime(timeLeft)}</span>
              </div>
           </div>
+        ) : (
+          <div className="w-[100px] hidden sm:block opacity-0">spacer</div>
         )}
-        <h1 className="text-lg font-black text-gray-900 truncate max-w-[200px] hidden md:block">{game.title}</h1>
       </div>
 
       {/* Main Game Area - FIXED LANDSCAPE & NO SCROLL */}
@@ -254,6 +272,24 @@ const MatchingGame = ({ game, matches, selectedItem, onSelect, onMatch }) => {
   const shuffledWords = useMemo(() => [...pairs].sort(() => Math.random() - 0.5), [pairs.length]);
   const shuffledImages = useMemo(() => [...pairs].sort(() => Math.random() - 0.5), [pairs.length]);
 
+  const matchColors = [
+    { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-700' },
+    { bg: 'bg-blue-50', border: 'border-blue-300', text: 'text-blue-700' },
+    { bg: 'bg-green-50', border: 'border-green-300', text: 'text-green-700' },
+    { bg: 'bg-yellow-50', border: 'border-yellow-300', text: 'text-yellow-700' },
+    { bg: 'bg-purple-50', border: 'border-purple-300', text: 'text-purple-700' },
+    { bg: 'bg-pink-50', border: 'border-pink-300', text: 'text-pink-700' },
+    { bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-700' },
+    { bg: 'bg-teal-50', border: 'border-teal-300', text: 'text-teal-700' },
+  ];
+
+  const getMatchStyle = (word) => {
+    const pairIndex = pairs.findIndex(p => p.word === word);
+    if (pairIndex === -1) return '';
+    const style = matchColors[pairIndex % matchColors.length];
+    return `${style.bg} ${style.border} ${style.text}`;
+  };
+
   return (
     <div className="flex-1 min-h-0 flex gap-4 overflow-hidden">
       <div className="flex-1 min-h-0 grid grid-cols-2 gap-4 sm:gap-10 overflow-hidden px-2 sm:px-6">
@@ -262,16 +298,18 @@ const MatchingGame = ({ game, matches, selectedItem, onSelect, onMatch }) => {
           {shuffledWords.map((pair, idx) => {
             const isMatched = matches[pair.word] !== undefined;
             const isSelected = selectedItem?.word === pair.word;
+            const matchStyle = isMatched ? getMatchStyle(pair.word) : '';
+            
             return (
               <motion.button 
                 key={`w-${idx}`} 
                 whileHover={isMatched ? {} : { scale: 1.02, x: 5 }} 
                 whileTap={isMatched ? {} : { scale: 0.98 }} 
                 onClick={() => !isMatched && onSelect(pair)} 
-                className={`flex-1 min-h-0 rounded-2xl border-2 font-black text-2xl sm:text-4xl transition-all flex items-center justify-center gap-3 ${isSelected ? 'bg-indigo-500 text-white border-indigo-400 shadow-xl scale-105' : isMatched ? 'bg-emerald-50 text-emerald-600 border-emerald-100 opacity-30' : 'bg-white text-gray-700 border-gray-100 hover:border-indigo-400 shadow-sm'}`}
+                className={`flex-1 min-h-0 rounded-2xl border-2 font-black text-2xl sm:text-4xl transition-all flex items-center justify-center gap-3 ${isSelected ? 'bg-indigo-500 text-white border-indigo-400 shadow-xl scale-105' : isMatched ? `${matchStyle} shadow-inner` : 'bg-white text-gray-700 border-gray-100 hover:border-indigo-400 shadow-sm'}`}
               >
                 {pair.word}
-                <AudioButton text={pair.word} variant="mini" iconSize={20} className="shrink-0 bg-indigo-50 border-none" onClick={e => e.stopPropagation()} />
+                <AudioButton text={pair.word} variant="mini" iconSize={20} className={`shrink-0 border-none ${isMatched ? 'bg-white/50' : 'bg-indigo-50'}`} onClick={e => e.stopPropagation()} />
               </motion.button>
             );
           })}
@@ -281,6 +319,8 @@ const MatchingGame = ({ game, matches, selectedItem, onSelect, onMatch }) => {
           {shuffledImages.map((pair, idx) => {
             const matchedKey = Object.entries(matches).find(([k, v]) => v === pair.word)?.[0];
             const isMatched = matchedKey !== undefined;
+            const matchStyle = isMatched ? getMatchStyle(pair.word) : '';
+
             return (
               <motion.button 
                 key={`i-${idx}`} 
@@ -288,9 +328,9 @@ const MatchingGame = ({ game, matches, selectedItem, onSelect, onMatch }) => {
                 whileTap={isMatched ? {} : { scale: 0.98 }} 
                 onClick={() => selectedItem && onMatch(selectedItem, pair)} 
                 disabled={isMatched} 
-                className={`flex-1 min-h-0 rounded-2xl border-2 p-2 transition-all flex items-center justify-center ${isMatched ? 'bg-emerald-50 border-emerald-100 opacity-30' : 'bg-white border-gray-100 hover:border-purple-400 shadow-sm'}`}
+                className={`flex-1 min-h-0 rounded-2xl border-2 p-2 transition-all flex items-center justify-center ${isMatched ? `${matchStyle} shadow-inner` : 'bg-white border-gray-100 hover:border-purple-400 shadow-sm'}`}
               >
-                {pair.image ? <img src={pair.image} className="h-full w-full object-contain mx-auto drop-shadow-sm" /> : <ImageIcon size={48} className="mx-auto text-gray-300" />}
+                {pair.image ? <img src={pair.image} className={`h-full w-full object-contain mx-auto drop-shadow-sm transition-transform ${isMatched ? 'scale-110' : ''}`} /> : <ImageIcon size={48} className="mx-auto text-gray-300" />}
               </motion.button>
             );
           })}
