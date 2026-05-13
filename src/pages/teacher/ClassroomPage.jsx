@@ -294,6 +294,7 @@ const ClassroomPage = () => {
         toast.success(`นำเข้านักเรียน ${validStudents.length} คนสำเร็จ`);
         setShowPdfPreviewModal(false);
         queryClient.invalidateQueries(['classroom', classroomId]);
+        queryClient.invalidateQueries(['classroom-students', classroomId]);
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
@@ -333,6 +334,7 @@ const ClassroomPage = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['classroom', classroomId]);
+        queryClient.invalidateQueries(['classroom-students', classroomId]);
         setShowAddStudentsModal(false);
         toast.success('เพิ่มนักเรียนสำเร็จ');
       },
@@ -358,6 +360,7 @@ const ClassroomPage = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['classroom', classroomId]);
+        queryClient.invalidateQueries(['classroom-students', classroomId]);
         toast.success('ลบนักเรียนสำเร็จ');
       },
       onError: (error) => {
