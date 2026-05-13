@@ -581,8 +581,8 @@ const StudentTestPage = () => {
 
                       {/* Options Section - ปรับปรุงความสูงให้สมส่วน ไม่โย่งเกินไป */}
                       {!currentQuestion.isMatching ? (
-                        <div className="w-full max-w-4x mx-auto py-2 px-6 sm:px-10">
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 justify-center">
+                        <div className="w-full max-w-4xl mx-auto py-2 px-4 sm:px-8 lg:pr-12">
+                          <div className="grid grid-cols-2 gap-4 sm:gap-6 justify-center">
                             {currentQuestion.options.map((option, index) => {
                               const questionId = currentQuestion._id || currentQuestion.id;
                               const isSelected = currentQuestion.isMultipleChoice
@@ -638,7 +638,7 @@ const StudentTestPage = () => {
                                         <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white transition-all ${isSelected ? 'scale-100' : 'scale-0'}`} />
                                       </div>
 
-                                      <span className={`text-[18px] sm:text-3xl font-black truncate ${isSelected ? 'text-indigo-900' : 'text-gray-700'
+                                      <span className={`text-[18px] sm:text-3xl font-black break-words text-wrap whitespace-normal ${isSelected ? 'text-indigo-900' : 'text-gray-700'
                                         }`}>
                                         {displayText}
                                       </span>
@@ -764,7 +764,7 @@ const StudentTestPage = () => {
 
                                             {/* ขยายขนาดตัวหนังสือจาก text-xs เป็น text-lg */}
                                             <span className={`text-base sm:text-2xl font-black ${isUsed ? 'text-gray-400' : 'text-indigo-900'
-                                              } truncate`}>
+                                              } break-words text-wrap whitespace-normal`}>
                                               {option}
                                             </span>
 
