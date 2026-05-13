@@ -1,17 +1,22 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, BookOpen, Upload, Image as ImageIcon } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { compressImage } from '../../utils/imageUtils';
 
 const QuickCreateLessonModal = ({ onClose, onSubmit, isLoading = false, initialTitle = '' }) => {
   const [title, setTitle] = useState(initialTitle);
   const [imagePreview, setImagePreview] = useState(null);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result);
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file);
+        setImagePreview(compressed);
+      } catch (err) {
+        toast.error(err.message || 'เกิดข้อผิดพลาดในการบีบอัดรูปภาพ');
+      }
     }
   };
 

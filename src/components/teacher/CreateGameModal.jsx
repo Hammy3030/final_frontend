@@ -5,6 +5,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { getApiUrl } from '../../utils/apiConfig';
 import { useAuth } from '../../contexts/AuthContext';
+import { compressImage } from '../../utils/imageUtils';
 
 const CreateGameModal = ({ isOpen, onClose, lessonId, lessonTitle }) => {
   const { token } = useAuth();
@@ -33,17 +34,18 @@ const CreateGameModal = ({ isOpen, onClose, lessonId, lessonTitle }) => {
     setPairs(newPairs);
   };
 
-  const handleImageChange = (index, e) => {
+  const handleImageChange = async (index, e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
+      try {
+        const compressed = await compressImage(file);
         const newPairs = [...pairs];
         newPairs[index].file = file;
-        newPairs[index].preview = reader.result; // This will be the base64 string
+        newPairs[index].preview = compressed; // This will be the compressed base64 string
         setPairs(newPairs);
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        toast.error(err.message || 'เกิดข้อผิดพลาดในการบีบอัดรูปภาพ');
+      }
     }
   };
 

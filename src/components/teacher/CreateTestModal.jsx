@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { getApiUrl } from '../../utils/apiConfig';
 import { useAuth } from '../../contexts/AuthContext';
 import { speak } from '../../utils/textToSpeech';
+import { compressImage } from '../../utils/imageUtils';
 
 const CreateTestModal = ({ isOpen, onClose, lessonId, lessonTitle }) => {
   const { token } = useAuth();
@@ -56,33 +57,35 @@ const CreateTestModal = ({ isOpen, onClose, lessonId, lessonTitle }) => {
     setQuestions(newQuestions);
   };
 
-  const handleImageChange = (index, e) => {
+  const handleImageChange = async (index, e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
+      try {
+        const compressed = await compressImage(file);
         const newQuestions = [...questions];
         newQuestions[index].file = file;
-        newQuestions[index].preview = reader.result; // Base64 string
+        newQuestions[index].preview = compressed; // Compressed base64 string
         setQuestions(newQuestions);
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        toast.error(err.message || 'เกิดข้อผิดพลาดในการบีบอัดรูปภาพ');
+      }
     }
   };
 
-  const handleOptionImageChange = (qIndex, oIndex, e) => {
+  const handleOptionImageChange = async (qIndex, oIndex, e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
+      try {
+        const compressed = await compressImage(file);
         const newQuestions = [...questions];
         if (!newQuestions[qIndex].imageOptions) {
           newQuestions[qIndex].imageOptions = ['', '', '', ''];
         }
-        newQuestions[qIndex].imageOptions[oIndex] = reader.result; // Base64 string
+        newQuestions[qIndex].imageOptions[oIndex] = compressed; // Compressed base64 string
         setQuestions(newQuestions);
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        toast.error(err.message || 'เกิดข้อผิดพลาดในการบีบอัดรูปภาพ');
+      }
     }
   };
 

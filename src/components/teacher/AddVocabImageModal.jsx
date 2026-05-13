@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Plus, Image as ImageIcon, Save, Edit2, FileImage, Type } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { compressImage } from '../../utils/imageUtils';
 
 const AddVocabImageModal = ({ onClose, onAdd, initialData = null }) => {
   const [word, setWord] = useState(initialData?.word || '');
@@ -10,11 +11,14 @@ const AddVocabImageModal = ({ onClose, onAdd, initialData = null }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  const processFile = (file) => {
+  const processFile = async (file) => {
     if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result);
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file);
+        setImagePreview(compressed);
+      } catch (err) {
+        toast.error(err.message || 'เกิดข้อผิดพลาดในการบีบอัดรูปภาพ');
+      }
     } else {
       toast.error('กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น');
     }

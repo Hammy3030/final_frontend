@@ -15,6 +15,8 @@ import {
   Layers
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { compressImage } from '../../utils/imageUtils';
 
 /**
  * Create Lesson Modal Component
@@ -72,12 +74,15 @@ const CreateLessonModal = ({ onClose, onSubmit, isLoading = false, nextOrder = 1
     { id: 'custom', label: 'อื่นๆ', icon: Plus, color: 'from-slate-500 to-slate-700', iconColor: 'text-slate-500' },
   ];
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result);
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file);
+        setImagePreview(compressed);
+      } catch (err) {
+        toast.error(err.message || 'เกิดข้อผิดพลาดในการบีบอัดรูปภาพ');
+      }
     }
   };
 
